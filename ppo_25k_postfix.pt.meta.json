@@ -1,0 +1,10 @@
+{
+  "global_step": 30720,
+  "episodes": 1263,
+  "wall_clock_duration_s": 35.08176350000031,
+  "complete_sps": 875.6686362132203,
+  "final_ploss": -0.0009138813707977534,
+  "final_vloss": 70.6051218032837,
+  "final_entropy": 3.7303554733594257,
+  "source": "controlled_ppo_25k_postfix"
+}

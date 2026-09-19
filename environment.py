@@ -59,6 +59,23 @@ class IndoorDroneNavEnv(gym.Env):
         margin_h = int(self.img_height * 0.20)
         margin_w = int(self.img_width * 0.20)
         self.roi_mask[margin_h:self.img_height - margin_h, margin_w:self.img_width - margin_w] = 1
+        self.roi_y_slice = slice(margin_h, self.img_height - margin_h)
+        self.roi_x_slice = slice(margin_w, self.img_width - margin_w)
+
+        # Precompute unrotated ray direction unit vectors for fast vectorized raycasting
+        focal_len = (self.img_width / 2.0) / math.tan(math.radians(self.fov / 2.0))
+        px = np.arange(self.img_width, dtype=np.float32)
+        py = np.arange(self.img_height, dtype=np.float32)
+        px_grid, py_grid = np.meshgrid(px, py)
+
+        ray_dx = (px_grid - self.img_width / 2.0) / focal_len
+        ray_dy = np.ones_like(ray_dx)
+        ray_dz = -(py_grid - self.img_height / 2.0) / focal_len
+
+        ray_mag = np.sqrt(ray_dx * ray_dx + ray_dy * ray_dy + ray_dz * ray_dz)
+        self._unit_rx_unrot = (ray_dx / ray_mag).astype(np.float32)
+        self._unit_ry_unrot = (ray_dy / ray_mag).astype(np.float32)
+        self._unit_rz = (ray_dz / ray_mag).astype(np.float32)
 
         self.observation_space = spaces.Dict(
             {
@@ -127,8 +144,17 @@ class IndoorDroneNavEnv(gym.Env):
 
         self._spawn_indoor_obstacles()
         self.prev_gray_frame = None
+        self.prev_dist_to_goal = float(np.linalg.norm(self.start_pos - self.goal_pos))
+        self.ep_reward_components = {
+            "progress": 0.0,
+            "goal_vel": 0.0,
+            "ttc": 0.0,
+            "attitude": 0.0,
+            "proximity": 0.0,
+            "terminal": 0.0,
+        }
         obs = self._get_observation()
-        info = {"goal_dist": np.linalg.norm(self.start_pos - self.goal_pos)}
+        info = {"goal_dist": self.prev_dist_to_goal}
         return obs, info
 
     def _spawn_indoor_obstacles(self):
@@ -218,78 +244,68 @@ class IndoorDroneNavEnv(gym.Env):
             self.last_depth_map = depth_meters
             return rgb, depth_meters
         else:
-            # 3D Perspective Raycasting Engine with Bright Ambient Lighting
+            # High-Performance Vectorized NumPy 3D Perspective Raycasting Engine
+            # Note: PyBullet is unavailable in this environment (Python 3.12 without C++ build tools),
+            # so this analytical raycaster serves as the primary high-fidelity simulation engine.
+            cam_x, cam_y, cam_z = float(self.drone_pos[0]), float(self.drone_pos[1]), float(self.drone_pos[2])
+            yaw = float(self.drone_orn[2])
+
+            cos_y = math.cos(yaw)
+            sin_y = math.sin(yaw)
+
+            rx = self._unit_rx_unrot * cos_y + self._unit_ry_unrot * sin_y
+            ry = -self._unit_rx_unrot * sin_y + self._unit_ry_unrot * cos_y
+            rz = self._unit_rz
+
+            min_dist = np.full((self.img_height, self.img_width), self.far_val, dtype=np.float32)
             rgb = np.full((self.img_height, self.img_width, 3), (60, 55, 50), dtype=np.uint8)
-            depth_meters = np.full((self.img_height, self.img_width), self.far_val, dtype=np.float32)
 
-            cam_x, cam_y, cam_z = self.drone_pos
-            yaw = self.drone_orn[2]
-            focal_len = (self.img_width / 2.0) / math.tan(math.radians(self.fov / 2.0))
+            # Intersect floor (z=0)
+            floor_mask = rz < -1e-4
+            t_floor = np.where(floor_mask, -cam_z / np.where(floor_mask, rz, -1.0), self.far_val)
+            valid_floor = floor_mask & (t_floor > 0) & (t_floor < min_dist)
 
-            for py in range(self.img_height):
-                for px in range(self.img_width):
-                    ray_dx = (px - self.img_width / 2.0) / focal_len
-                    ray_dy = 1.0
-                    ray_dz = -(py - self.img_height / 2.0) / focal_len
+            fx = cam_x + rx * t_floor
+            fy = cam_y + ry * t_floor
+            check = (np.floor(fx).astype(np.int32) + np.floor(fy).astype(np.int32)) % 2
 
-                    rx = ray_dx * math.cos(yaw) + ray_dy * math.sin(yaw)
-                    ry = -ray_dx * math.sin(yaw) + ray_dy * math.cos(yaw)
-                    rz = ray_dz
+            min_dist = np.where(valid_floor, t_floor, min_dist)
+            rgb[valid_floor & (check == 0)] = [230, 230, 230]
+            rgb[valid_floor & (check != 0)] = [90, 90, 100]
 
-                    ray_mag = math.sqrt(rx * rx + ry * ry + rz * rz)
-                    rx, ry, rz = rx / ray_mag, ry / ray_mag, rz / ray_mag
+            # Intersect obstacles
+            for spec in self.obstacle_specs:
+                ox, oy, oz = spec["pos"]
+                dx = cam_x - ox
+                dy = cam_y - oy
 
-                    min_dist = self.far_val
-                    hit_color = (60, 55, 50)
+                if spec["type"] == "cylinder":
+                    r = spec["radius"]
+                    a = rx * rx + ry * ry
+                    b = 2.0 * (dx * rx + dy * ry)
+                    c = dx * dx + dy * dy - r * r
+                    disc = b * b - 4.0 * a * c
+                    cyl_mask = (disc >= 0) & (a > 1e-6)
+                    sqrt_disc = np.sqrt(np.maximum(0.0, disc))
+                    t_cyl = (-b - sqrt_disc) / (2.0 * a + 1e-8)
+                    hit_z = cam_z + rz * t_cyl
+                    valid_cyl = cyl_mask & (t_cyl > 0) & (t_cyl < min_dist) & (hit_z >= 0) & (hit_z <= spec["height"])
+                    min_dist = np.where(valid_cyl, t_cyl, min_dist)
+                    rgb[valid_cyl] = spec["color"]
+                else:
+                    r_approx = max(spec["half_ext"])
+                    dist_to_center = math.hypot(dx, dy)
+                    proj = -(dx * rx + dy * ry)
+                    perp_sq = np.maximum(0.0, dist_to_center**2 - proj**2)
+                    valid_box = (dist_to_center < min_dist + r_approx) & (proj > 0) & (proj < min_dist) & (perp_sq < r_approx**2)
+                    min_dist = np.where(valid_box, proj, min_dist)
+                    rgb[valid_box] = spec["color"]
 
-                    # Intersect floor (z=0)
-                    if rz < -1e-4:
-                        t_floor = (0.0 - cam_z) / rz
-                        if 0 < t_floor < min_dist:
-                            fx = cam_x + rx * t_floor
-                            fy = cam_y + ry * t_floor
-                            check = (int(math.floor(fx)) + int(math.floor(fy))) % 2
-                            min_dist = t_floor
-                            # High-contrast floor tiles (Bright white & Dark slate)
-                            hit_color = (230, 230, 230) if check == 0 else (90, 90, 100)
+            shade = np.maximum(0.45, 1.0 - 0.5 * (min_dist / self.far_val))
+            rgb = (rgb * shade[:, :, None]).astype(np.uint8)
 
-                    # Intersect obstacles
-                    for spec in self.obstacle_specs:
-                        ox, oy, oz = spec["pos"]
-                        dx = cam_x - ox
-                        dy = cam_y - oy
-
-                        if spec["type"] == "cylinder":
-                            r = spec["radius"]
-                            a = rx * rx + ry * ry
-                            b = 2.0 * (dx * rx + dy * ry)
-                            c = dx * dx + dy * dy - r * r
-                            disc = b * b - 4 * a * c
-                            if disc >= 0 and a > 1e-6:
-                                t_cyl = (-b - math.sqrt(disc)) / (2.0 * a)
-                                if 0 < t_cyl < min_dist:
-                                    hit_z = cam_z + rz * t_cyl
-                                    if 0 <= hit_z <= spec["height"]:
-                                        min_dist = t_cyl
-                                        hit_color = spec["color"]
-                        else:
-                            r_approx = max(spec["half_ext"])
-                            dist_to_center = math.sqrt(dx * dx + dy * dy)
-                            if dist_to_center < min_dist + r_approx:
-                                proj = -(dx * rx + dy * ry)
-                                if 0 < proj < min_dist:
-                                    perp = math.sqrt(max(0, dist_to_center**2 - proj**2))
-                                    if perp < r_approx:
-                                        min_dist = proj
-                                        hit_color = spec["color"]
-
-                    depth_meters[py, px] = min_dist
-                    # Bright ambient shading multiplier
-                    shade = max(0.45, 1.0 - 0.5 * (min_dist / self.far_val))
-                    rgb[py, px] = [int(c * shade) for c in hit_color]
-
-            self.last_depth_map = depth_meters
-            return rgb, depth_meters
+            self.last_depth_map = min_dist
+            return rgb, min_dist
 
     def render_overhead_simulation_view(self, out_size=(380, 380)) -> np.ndarray:
         """Renders a 3rd-person isometric/overhead view showing drone and obstacles."""
@@ -384,10 +400,8 @@ class IndoorDroneNavEnv(gym.Env):
 
             du_dx = cv2.Sobel(u, cv2.CV_32F, 1, 0, ksize=3)
             dv_dy = cv2.Sobel(v, cv2.CV_32F, 0, 1, ksize=3)
-            divergence = du_dx + dv_dy
-
-            roi_divergence = divergence * self.roi_mask
-            mean_expansion = np.mean(roi_divergence[self.roi_mask == 1])
+            divergence_roi = du_dx[self.roi_y_slice, self.roi_x_slice] + dv_dy[self.roi_y_slice, self.roi_x_slice]
+            mean_expansion = float(np.mean(divergence_roi))
             tau_inv_bounded = float(np.clip(np.maximum(0.0, mean_expansion), 0.0, self.tau_inv_max))
 
         self.prev_gray_frame = current_gray.copy()
@@ -486,47 +500,83 @@ class IndoorDroneNavEnv(gym.Env):
         if self.out_of_bounds:
             collision = True
 
-        dist_to_goal = np.linalg.norm(pos - self.goal_pos)
+        dist_to_goal = float(np.linalg.norm(pos - self.goal_pos))
         goal_reached = dist_to_goal < 0.8
 
         # Progress reward (positive for moving closer to target)
         if not hasattr(self, "prev_dist_to_goal") or self.prev_dist_to_goal is None:
-            self.prev_dist_to_goal = np.linalg.norm(self.start_pos - self.goal_pos)
+            self.prev_dist_to_goal = float(np.linalg.norm(self.start_pos - self.goal_pos))
 
         r_progress = 6.0 * (self.prev_dist_to_goal - dist_to_goal)
         self.prev_dist_to_goal = dist_to_goal
 
         goal_dir = (self.goal_pos - pos) / (dist_to_goal + 1e-6)
-        r_goal = 3.0 * float(np.dot(obs["velocity"], goal_dir))
+
+        # Clearance factor based on depth map
+        min_depth = self.far_val
+        if self.last_depth_map is not None:
+            min_depth = float(np.percentile(self.last_depth_map, 5))
+
+        # Gate goal velocity reward by clearance so full-throttle collision rushes are not bribed
+        clearance_factor = float(np.clip((min_depth - 0.8) / 1.0, 0.0, 1.0))
+        r_goal = 2.5 * float(np.dot(obs["velocity"], goal_dir)) * clearance_factor
+
         r_ttc = -2.0 * self.current_tau_inv
         r_attitude = -0.5 * (abs(roll) + abs(pitch))
 
-        # Proximity safety penalty: penalizes getting within 1.5m of obstacles/walls
+        # Nonlinear quadratic proximity safety penalty:
+        # Quadratically penalizes penetrating within 1.2m of obstacles/walls
+        # Provides gentle gradient far away, strong quadratic repulsion close up
         r_proximity = 0.0
-        if self.last_depth_map is not None:
-            min_depth = float(np.percentile(self.last_depth_map, 5))
-            if min_depth < 1.5:
-                r_proximity = -3.0 * (1.5 - min_depth)
+        if min_depth < 1.2:
+            r_proximity = -5.0 * ((1.2 - min_depth) ** 2)
 
-        reward = r_progress + r_goal + r_ttc + r_attitude + r_proximity
-
+        terminal_reward = 0.0
         terminated = False
         truncated = False
 
         if collision:
-            reward -= 100.0
+            terminal_reward = -100.0
             terminated = True
         elif goal_reached:
-            reward += 100.0
+            terminal_reward = 100.0
             terminated = True
         elif self.current_step >= self.max_steps:
             truncated = True
+
+        reward = r_progress + r_goal + r_ttc + r_attitude + r_proximity + terminal_reward
+
+        # Update cumulative episode reward components
+        if not hasattr(self, "ep_reward_components"):
+            self.ep_reward_components = {"progress": 0.0, "goal_vel": 0.0, "ttc": 0.0, "attitude": 0.0, "proximity": 0.0, "terminal": 0.0}
+
+        self.ep_reward_components["progress"] += r_progress
+        self.ep_reward_components["goal_vel"] += r_goal
+        self.ep_reward_components["ttc"] += r_ttc
+        self.ep_reward_components["attitude"] += r_attitude
+        self.ep_reward_components["proximity"] += r_proximity
+        self.ep_reward_components["terminal"] += terminal_reward
 
         info = {
             "dist_to_goal": dist_to_goal,
             "tau_inv": self.current_tau_inv,
             "collision": collision,
             "goal_reached": goal_reached,
+            "min_depth": min_depth,
+            "reward_components": {
+                "step_progress": r_progress,
+                "step_goal_vel": r_goal,
+                "step_ttc": r_ttc,
+                "step_attitude": r_attitude,
+                "step_proximity": r_proximity,
+                "step_terminal": terminal_reward,
+                "ep_progress": self.ep_reward_components["progress"],
+                "ep_goal_vel": self.ep_reward_components["goal_vel"],
+                "ep_ttc": self.ep_reward_components["ttc"],
+                "ep_attitude": self.ep_reward_components["attitude"],
+                "ep_proximity": self.ep_reward_components["proximity"],
+                "ep_terminal": self.ep_reward_components["terminal"],
+            },
         }
 
         return obs, reward, terminated, truncated, info

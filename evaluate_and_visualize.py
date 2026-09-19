@@ -17,6 +17,7 @@ import cv2
 from environment import IndoorDroneNavEnv
 from model import PhysicsInformedActorCritic
 from explainability import DroneXAIEngine
+from tactical_renderer import TacticalDashboardRenderer
 
 TORCH_AVAILABLE = True
 try:
@@ -235,24 +236,35 @@ def evaluate_policy(args):
 
     seed_rewards, seed_successes, seed_collisions = [], [], []
     seed_fidelities, seed_latencies = [], []
+    seed_clearances = []
 
-    dashboard_win_name = "Real-Time Explainable Autonomous Drone Navigation Dashboard"
+    dashboard_win_name = "AUTONOMOUS UAV // TACTICAL NAVIGATION SYSTEM - MILITARY C2 CONSOLE"
+    tactical_renderer = None
     if not args.headless:
         try:
             cv2.namedWindow(dashboard_win_name, cv2.WINDOW_NORMAL)
-            cv2.resizeWindow(dashboard_win_name, 1280, 540)
+            cv2.resizeWindow(dashboard_win_name, 1600, 900)
+            tactical_renderer = TacticalDashboardRenderer(target_w=1600, target_h=900)
         except Exception as e:
             print(f"[!] Warning: OpenCV GUI window unavailable ({e}). Running in headless mode.")
             args.headless = True
 
-    for seed_idx, seed in enumerate(eval_seeds):
+    seed_idx = 0
+    while seed_idx < len(eval_seeds):
+        seed = eval_seeds[seed_idx]
         env = IndoorDroneNavEnv(gui=False, seed=seed, max_steps=args.max_steps)
         obs, info = env.reset(seed=seed)
+        if tactical_renderer is not None:
+            tactical_renderer.reset_episode(ep_idx=seed_idx + 1, start_pos=env.start_pos, seed=seed)
 
         ep_reward = 0.0
         step_count = 0
+        ep_min_clearance = float("inf")
         ep_fidelities = []
         ep_latencies = []
+
+        restart_requested = False
+        skip_to_next = False
 
         while True:
             t_start = time.perf_counter()
@@ -290,41 +302,97 @@ def evaluate_policy(args):
             next_obs, reward, terminated, truncated, step_info = env.step(action_mean)
             ep_reward += reward
             step_count += 1
-
-            rgb_raw = (vis_obs[:3].transpose(1, 2, 0) * 255).astype(np.uint8)
-            flow_field = vis_obs[3:5].transpose(1, 2, 0)
-
-            # Panel 1: 3D Overhead Simulation Map (Shows Drone, Obstacles, Goal)
-            sim_overhead = env.render_overhead_simulation_view((390, 390))
-
-            # Panel 2: Camera Feed + Dense Optical Flow Vectors
-            flow_overlay = draw_optical_flow_vectors(rgb_raw, flow_field)
-
-            # Panel 3: High-Contrast Saliency Heatmap Overlay (TURBO Colormap)
-            saliency_overlay = DroneXAIEngine.generate_heatmap_overlay(rgb_raw, saliency_attr, alpha=0.65)
+            if "min_depth" in step_info:
+                ep_min_clearance = min(ep_min_clearance, float(step_info["min_depth"]))
 
             fps = 1000.0 / (latency_ms + 1e-6)
 
-            if not args.headless:
+            if not args.headless and tactical_renderer is not None:
+                step_info["reward"] = reward
                 try:
-                    dashboard_canvas = create_unified_dashboard_canvas(
-                        sim_view=sim_overhead,
-                        flow_view=flow_overlay,
-                        saliency_view=saliency_overlay,
+                    dashboard_canvas = tactical_renderer.render(
+                        env=env,
+                        obs=obs,
+                        action=action_mean,
+                        saliency_attr=saliency_attr,
+                        fidelity_iou=float(np.mean(ep_fidelities)) if ep_fidelities else 0.0,
+                        step_info=step_info,
+                        ep_reward=ep_reward,
+                        step_count=step_count,
+                        ep_idx=seed_idx + 1,
+                        total_eps=len(eval_seeds),
+                        model=model,
                         fps=fps,
-                        latency_ms=latency_ms,
-                        fidelity_iou=np.mean(ep_fidelities),
-                        goal_dist=step_info.get("dist_to_goal", 0.0),
-                        step_num=step_count
                     )
                     cv2.imshow(dashboard_win_name, dashboard_canvas)
-                    cv2.waitKey(1)
+                    k = cv2.waitKey(tactical_renderer.delay_ms)
+                    key_act = tactical_renderer.handle_key(k)
+
+                    if cv2.getWindowProperty(dashboard_win_name, cv2.WND_PROP_VISIBLE) < 1 or key_act["exit"]:
+                        print("[*] Operator exited evaluation via C2 Console.")
+                        env.close()
+                        cv2.destroyAllWindows()
+                        return
+
+                    if key_act["toggle_fullscreen"]:
+                        cur_prop = cv2.getWindowProperty(dashboard_win_name, cv2.WND_PROP_FULLSCREEN)
+                        new_prop = cv2.WINDOW_NORMAL if cur_prop == cv2.WINDOW_FULLSCREEN else cv2.WINDOW_FULLSCREEN
+                        cv2.setWindowProperty(dashboard_win_name, cv2.WND_PROP_FULLSCREEN, new_prop)
+
+                    if key_act["restart"]:
+                        restart_requested = True
+                        break
+
+                    if key_act["next_episode"]:
+                        skip_to_next = True
+                        break
+
+                    while tactical_renderer.is_paused:
+                        kp = cv2.waitKey(50)
+                        kp_act = tactical_renderer.handle_key(kp)
+                        if cv2.getWindowProperty(dashboard_win_name, cv2.WND_PROP_VISIBLE) < 1 or kp_act["exit"]:
+                            print("[*] Operator exited evaluation via C2 Console.")
+                            env.close()
+                            cv2.destroyAllWindows()
+                            return
+                        if kp_act["restart"]:
+                            restart_requested = True
+                            break
+                        if kp_act["next_episode"]:
+                            skip_to_next = True
+                            break
+                    if restart_requested or skip_to_next:
+                        break
+
                 except Exception as e:
+                    print(f"[!] Warning: GUI rendering error ({e}). Switching to headless mode.")
                     args.headless = True
 
             obs = next_obs
 
             if terminated or truncated:
+                if not args.headless and tactical_renderer is not None:
+                    try:
+                        step_info["reward"] = reward
+                        dashboard_canvas = tactical_renderer.render(
+                            env=env,
+                            obs=obs,
+                            action=action_mean,
+                            saliency_attr=saliency_attr,
+                            fidelity_iou=float(np.mean(ep_fidelities)) if ep_fidelities else 0.0,
+                            step_info=step_info,
+                            ep_reward=ep_reward,
+                            step_count=step_count,
+                            ep_idx=seed_idx + 1,
+                            total_eps=len(eval_seeds),
+                            model=model,
+                            fps=fps,
+                        )
+                        cv2.imshow(dashboard_win_name, dashboard_canvas)
+                        cv2.waitKey(600)
+                    except Exception:
+                        pass
+
                 collision = step_info.get("collision", False)
                 goal_reached = step_info.get("goal_reached", False)
 
@@ -333,15 +401,20 @@ def evaluate_policy(args):
                 seed_collisions.append(1.0 if collision else 0.0)
                 seed_fidelities.append(np.mean(ep_fidelities) if ep_fidelities else 0.0)
                 seed_latencies.append(np.mean(ep_latencies))
+                seed_clearances.append(ep_min_clearance if ep_min_clearance != float("inf") else 0.0)
 
                 status_str = "SUCCESS" if goal_reached else ("COLLISION" if collision else "TIMEOUT")
                 n = len(eval_seeds)
                 print(f"[Env {seed_idx+1}/{n} seed={seed}] {status_str} | Steps: {step_count} | "
-                      f"Reward: {ep_reward:.2f} | Fidelity: {np.mean(ep_fidelities):.3f} | "
-                      f"Latency: {np.mean(ep_latencies):.2f}ms")
+                      f"Reward: {ep_reward:.2f} | MinClearance: {ep_min_clearance:.2f}m | "
+                      f"Fidelity: {np.mean(ep_fidelities):.3f} | Latency: {np.mean(ep_latencies):.2f}ms")
                 break
 
         env.close()
+
+        if restart_requested:
+            continue
+        seed_idx += 1
 
     if not args.headless:
         cv2.destroyAllWindows()
@@ -353,6 +426,7 @@ def evaluate_policy(args):
     print(f"Mean Episode Reward           : {np.mean(seed_rewards):.2f} +/- {np.std(seed_rewards):.2f}")
     print(f"Success Rate (Goal Reached)  : {np.mean(seed_successes) * 100.0:.1f}%")
     print(f"Collision Rate               : {np.mean(seed_collisions) * 100.0:.1f}%")
+    print(f"Mean Minimum Clearance       : {np.mean(seed_clearances):.2f} m")
     print(f"Mean Explanation Fidelity IoU: {np.mean(seed_fidelities):.4f}")
     print(f"Mean Decision Latency        : {np.mean(seed_latencies):.2f} ms ({1000.0 / np.mean(seed_latencies):.1f} FPS)")
     print("=" * 65)

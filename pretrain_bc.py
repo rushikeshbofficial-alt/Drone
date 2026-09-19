@@ -258,10 +258,14 @@ def train_bc(demos: dict, args) -> "PhysicsInformedActorCritic":
 
         scheduler.step()
         mean_loss = float(np.mean(losses))
+        output_path = getattr(args, "output", "best_model.pt")
 
         if mean_loss < best_loss:
             best_loss = mean_loss
-            torch.save(model.state_dict(), "best_model.pt")
+            if os.path.exists(output_path) and not os.path.exists(output_path + ".bak"):
+                import shutil
+                shutil.copyfile(output_path, output_path + ".bak")
+            torch.save(model.state_dict(), output_path)
             saved_str = "  <-- SAVED"
         else:
             saved_str = ""
@@ -272,7 +276,7 @@ def train_bc(demos: dict, args) -> "PhysicsInformedActorCritic":
                   f"LR: {scheduler.get_last_lr()[0]:.2e}{saved_str}")
 
     print(f"\n[+] BC Training Complete! Best loss: {best_loss:.6f}")
-    print(f"[+] Model saved to: best_model.pt")
+    print(f"[+] Model saved to: {output_path}")
     return model
 
 
@@ -289,8 +293,9 @@ def validate_model(args):
         return
 
     device = "cuda" if torch.cuda.is_available() else "cpu"
+    output_path = getattr(args, "output", "best_model.pt")
     model  = PhysicsInformedActorCritic().to(device)
-    model.load_state_dict(torch.load("best_model.pt", map_location=device, weights_only=True))
+    model.load_state_dict(torch.load(output_path, map_location=device, weights_only=True))
     model.eval()
 
     print("\n[*] Running quick 3-episode validation of trained model...")
@@ -344,6 +349,7 @@ if __name__ == "__main__":
     parser.add_argument("--bc-lr",             type=float, default=3e-4,  help="BC Adam learning rate")
     parser.add_argument("--skip-collect",      action="store_true",       help="Skip demo collection (reuse existing)")
     parser.add_argument("--demo-file",         type=str,   default="bc_demos.npz", help="Demo cache file")
+    parser.add_argument("--output",            type=str,   default="best_model.pt", help="Path to save trained weights")
     args = parser.parse_args()
 
     print("=" * 60)

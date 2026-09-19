@@ -49,9 +49,9 @@ goto MENU
 
 :TRAIN
 CLS
-echo [*] Starting Ultra-Fast Single Environment PPO Training (Zero IPC Overhead)...
-echo [*] Config: Single Environment (n_envs=1), AMP FP16, torch.compile, Batch 256
-python train.py --total-timesteps 200000 --n-envs 1 --n-steps 256 --batch-size 256 --update-epochs 10 --dashboard
+echo [*] Starting High-Throughput Parallel PPO Training (SharedMemory IPC)...
+echo [*] Config: Parallel Environments (n_envs=12), BF16 AMP, Batch 1024
+python train.py --total-timesteps 500000 --n-envs 12 --n-steps 512 --batch-size 1024 --update-epochs 10 --dashboard
 echo.
 echo [*] Training process finished.
 pause
@@ -79,7 +79,7 @@ goto MENU
 :DRYRUN
 CLS
 echo [*] Running quick evaluation dry-run...
-python evaluate_and_visualize.py --max-steps 500 --gui
+python evaluate_and_visualize.py --max-steps 500 --headless
 echo.
 echo [*] Quick test finished.
 pause

@@ -1,0 +1,174 @@
+{
+  "Training Layouts": {
+    "Baseline PPO": {
+      "model_name": "Baseline PPO",
+      "seed_set": "Training Layouts",
+      "success_rate": 0.0,
+      "collision_rate": 100.0,
+      "timeout_rate": 0.0,
+      "mean_reward": -103.05157245397568,
+      "std_reward": 13.99222206811471,
+      "max_reward": -87.46103703975677,
+      "mean_episode_length": 27.6,
+      "min_clearance": 0.10628294199705124,
+      "mean_min_clearance": 0.15779248923063277,
+      "final_goal_distance": 13.014099884033204,
+      "per_seed_rewards": [
+        -101.97061836719513,
+        -120.86682969331741,
+        -116.91299456357956,
+        -87.46103703975677,
+        -88.04638260602951
+      ],
+      "per_seed_statuses": [
+        "COLLISION",
+        "COLLISION",
+        "COLLISION",
+        "COLLISION",
+        "COLLISION"
+      ]
+    },
+    "25k PPO": {
+      "model_name": "25k PPO",
+      "seed_set": "Training Layouts",
+      "success_rate": 0.0,
+      "collision_rate": 100.0,
+      "timeout_rate": 0.0,
+      "mean_reward": -69.9353531241417,
+      "std_reward": 2.848314992510946,
+      "max_reward": -66.33982372283936,
+      "mean_episode_length": 17.0,
+      "min_clearance": 0.13857662677764893,
+      "mean_min_clearance": 0.13857662677764893,
+      "final_goal_distance": 14.178581237792969,
+      "per_seed_rewards": [
+        -70.20677590370178,
+        -67.92659640312195,
+        -70.44445192813873,
+        -74.75911766290665,
+        -66.33982372283936
+      ],
+      "per_seed_statuses": [
+        "COLLISION",
+        "COLLISION",
+        "COLLISION",
+        "COLLISION",
+        "COLLISION"
+      ]
+    },
+    "25k BC": {
+      "model_name": "25k BC",
+      "seed_set": "Training Layouts",
+      "success_rate": 20.0,
+      "collision_rate": 80.0,
+      "timeout_rate": 0.0,
+      "mean_reward": -88.75466583967209,
+      "std_reward": 146.52449301613606,
+      "max_reward": 162.71556794643402,
+      "mean_episode_length": 84.4,
+      "min_clearance": 0.08421634137630463,
+      "mean_min_clearance": 0.14744813144207,
+      "final_goal_distance": 7.467496633529663,
+      "per_seed_rewards": [
+        -233.64580589532852,
+        -221.1807610988617,
+        162.71556794643402,
+        -127.04498094320297,
+        -24.617349207401276
+      ],
+      "per_seed_statuses": [
+        "COLLISION",
+        "COLLISION",
+        "SUCCESS",
+        "COLLISION",
+        "COLLISION"
+      ]
+    }
+  },
+  "Unseen Layouts": {
+    "Baseline PPO": {
+      "model_name": "Baseline PPO",
+      "seed_set": "Unseen Layouts",
+      "success_rate": 0.0,
+      "collision_rate": 100.0,
+      "timeout_rate": 0.0,
+      "mean_reward": -118.01499350070954,
+      "std_reward": 13.846677236233269,
+      "max_reward": -94.01013219356537,
+      "mean_episode_length": 31.6,
+      "min_clearance": 0.10619759559631348,
+      "mean_min_clearance": 0.17648758888244628,
+      "final_goal_distance": 12.546828269958496,
+      "per_seed_rewards": [
+        -113.86578023433685,
+        -119.20914244651794,
+        -131.9181753396988,
+        -94.01013219356537,
+        -131.0717372894287
+      ],
+      "per_seed_statuses": [
+        "COLLISION",
+        "COLLISION",
+        "COLLISION",
+        "COLLISION",
+        "COLLISION"
+      ]
+    },
+    "25k PPO": {
+      "model_name": "25k PPO",
+      "seed_set": "Unseen Layouts",
+      "success_rate": 0.0,
+      "collision_rate": 100.0,
+      "timeout_rate": 0.0,
+      "mean_reward": -72.5696158528328,
+      "std_reward": 10.408495012210606,
+      "max_reward": -63.293880224227905,
+      "mean_episode_length": 16.8,
+      "min_clearance": 0.13857662677764893,
+      "mean_min_clearance": 0.13857662677764893,
+      "final_goal_distance": 14.199442481994629,
+      "per_seed_rewards": [
+        -73.13159304857254,
+        -66.83892357349396,
+        -67.17901360988617,
+        -92.4046688079834,
+        -63.293880224227905
+      ],
+      "per_seed_statuses": [
+        "COLLISION",
+        "COLLISION",
+        "COLLISION",
+        "COLLISION",
+        "COLLISION"
+      ]
+    },
+    "25k BC": {
+      "model_name": "25k BC",
+      "seed_set": "Unseen Layouts",
+      "success_rate": 20.0,
+      "collision_rate": 80.0,
+      "timeout_rate": 0.0,
+      "mean_reward": -66.81083127511666,
+      "std_reward": 165.29120752140992,
+      "max_reward": 170.42495289444923,
+      "mean_episode_length": 102.8,
+      "min_clearance": 0.040861576795578,
+      "mean_min_clearance": 0.11854178309440613,
+      "final_goal_distance": 6.354052436351776,
+      "per_seed_rewards": [
+        -194.7264211177826,
+        -299.88223491376266,
+        170.42495289444923,
+        -36.425232231616974,
+        26.55477899312973
+      ],
+      "per_seed_statuses": [
+        "COLLISION",
+        "COLLISION",
+        "SUCCESS",
+        "COLLISION",
+        "COLLISION"
+      ]
+    }
+  }
+}

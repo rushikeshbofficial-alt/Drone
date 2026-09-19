@@ -12,8 +12,8 @@ echo =========================================================================
 echo.
 echo  [*] Target Training Duration : ~4 Hours
 echo  [*] Total Environment Steps : 4,000,000 Steps
-echo  [*] Parallel Environments  : 16 Workers (Multi-Process SubprocVecEnv)
-echo  [*] Hardware Acceleration   : NVIDIA RTX 5060 (CUDA Device 0, TF32)
+echo  [*] Parallel Environments  : 12 Workers (SharedMemory SubprocVecEnv)
+echo  [*] Hardware Acceleration   : NVIDIA RTX 5060 (CUDA Device 0, BF16 AMP)
 echo  [*] Live 3-Panel Dashboard  : LAUNCHED (Auto-Updating OpenCV GUI Window)
 echo  [*] TensorBoard Web Overview: LAUNCHED (http://localhost:6006 Browser Window)
 echo  [*] Post-Training Action    : AUTOMATIC COMPUTER SHUTDOWN
@@ -42,7 +42,7 @@ echo [*] Step 2/3: Launching 4,000,000 Timestep PPO Training + Live Dashboard Wi
 echo =========================================================================
 echo.
 
-python train.py --total-timesteps 4000000 --n-envs 16 --n-steps 512 --batch-size 2048 --update-epochs 10 --dashboard
+python train.py --total-timesteps 4000000 --n-envs 12 --n-steps 512 --batch-size 1024 --update-epochs 10 --dashboard
 
 echo.
 echo =========================================================================
