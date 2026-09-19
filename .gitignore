@@ -1,0 +1,17 @@
+# Python Bytecode & Caches
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Data & Demo Caches
+*.npz
+*.npy
+
+# TensorBoard Logs
+runs/
+
+# System & OS Files
+.DS_Store
+Thumbs.db
+*.tmp
+*.log

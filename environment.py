@@ -1,0 +1,536 @@
+"""
+environment.py - Custom Gymnasium Drone Navigation Environment
+--------------------------------------------------------------
+Physics-Informed Autonomous Drone Navigation in Unstructured 3D Indoor Environments.
+Features 240 Hz PyBullet Physics with 24 Hz Gymnasium Control, Monocular RGB-D Vision,
+60% ROI Farneback Optical Flow, Bounded Time-to-Collision (tau^-1), and Physics Rewards.
+Includes bright, high-contrast 3D Perspective First-Person & Third-Person Renderers.
+"""
+
+import math
+import numpy as np
+import cv2
+import gymnasium as gym
+from gymnasium import spaces
+
+PYBULLET_AVAILABLE = True
+try:
+    import pybullet as p
+    import pybullet_data
+except ImportError:
+    PYBULLET_AVAILABLE = False
+
+
+class IndoorDroneNavEnv(gym.Env):
+    """Gymnasium environment for autonomous indoor drone navigation."""
+    metadata = {"render_modes": ["human", "rgb_array"], "render_fps": 24}
+
+    def __init__(
+        self,
+        gui: bool = False,
+        seed: int = 42,
+        max_steps: int = 500,
+        tau_inv_max: float = 5.0,
+    ):
+        super().__init__()
+        self.gui = gui
+        self.seed_val = seed
+        self.max_steps = max_steps
+        self.tau_inv_max = tau_inv_max
+        self.current_step = 0
+        self.pybullet_active = PYBULLET_AVAILABLE
+
+        # Frequency and Substepping configuration
+        self.physics_freq = 240.0
+        self.control_freq = 24.0
+        self.physics_substeps = int(self.physics_freq / self.control_freq)  # 8 substeps
+        self.dt = 1.0 / self.physics_freq
+
+        # Visual camera resolution (84x84)
+        self.img_width = 84
+        self.img_height = 84
+        self.fov = 65.0
+        self.aspect = self.img_width / self.img_height
+        self.near_val = 0.1
+        self.far_val = 12.0
+
+        # Create 60% Central ROI Mask for optical flow calculation
+        self.roi_mask = np.zeros((self.img_height, self.img_width), dtype=np.uint8)
+        margin_h = int(self.img_height * 0.20)
+        margin_w = int(self.img_width * 0.20)
+        self.roi_mask[margin_h:self.img_height - margin_h, margin_w:self.img_width - margin_w] = 1
+
+        self.observation_space = spaces.Dict(
+            {
+                "visual": spaces.Box(low=-np.inf, high=np.inf, shape=(5, 84, 84), dtype=np.float32),
+                "velocity": spaces.Box(low=-10.0, high=10.0, shape=(3,), dtype=np.float32),
+            }
+        )
+
+        self.action_space = spaces.Box(low=-1.0, high=1.0, shape=(4,), dtype=np.float32)
+
+        if self.pybullet_active:
+            try:
+                self.client_id = p.connect(p.GUI if self.gui else p.DIRECT)
+                p.setAdditionalSearchPath(pybullet_data.getDataPath(), physicsClientId=self.client_id)
+            except Exception:
+                self.pybullet_active = False
+
+        self.drone_pos = np.array([0.0, -8.0, 1.5], dtype=np.float32)
+        self.drone_vel = np.zeros(3, dtype=np.float32)
+        self.drone_orn = np.zeros(3, dtype=np.float32)
+        self.drone_id = None
+        self.obstacle_specs = []
+        self.obstacle_ids = []
+        self.prev_gray_frame = None
+        self.goal_pos = np.array([0.0, 8.0, 1.5], dtype=np.float32)
+        self.start_pos = np.array([0.0, -8.0, 1.5], dtype=np.float32)
+        self.last_depth_map = None
+
+        self._set_seed(self.seed_val)
+
+    def _set_seed(self, seed: int):
+        np.random.seed(seed)
+
+    # Hard arena limits — drone is instantly clamped to these in every substep
+    ARENA_X_LIM = 4.6
+    ARENA_Y_LIM = 9.6
+    ARENA_Z_MIN = 0.15
+    ARENA_Z_MAX = 3.5
+
+    def reset(self, seed=None, options=None):
+        super().reset(seed=seed)
+        if seed is not None:
+            self._set_seed(seed)
+
+        self.current_step = 0
+        self.out_of_bounds = False          # set True the moment drone hits a wall
+        self.drone_pos = self.start_pos.copy()
+        self.drone_vel = np.zeros(3, dtype=np.float32)
+        self.drone_orn = np.zeros(3, dtype=np.float32)
+
+        if self.pybullet_active:
+            p.resetSimulation(physicsClientId=self.client_id)
+            p.setGravity(0, 0, -9.81, physicsClientId=self.client_id)
+            p.setTimeStep(self.dt, physicsClientId=self.client_id)
+            p.loadURDF("plane.urdf", physicsClientId=self.client_id)
+
+            drone_col = p.createCollisionShape(p.GEOM_BOX, halfExtents=[0.2, 0.2, 0.08], physicsClientId=self.client_id)
+            drone_vis = p.createVisualShape(p.GEOM_BOX, halfExtents=[0.2, 0.2, 0.08], rgbaColor=[0.1, 0.7, 1.0, 1.0], physicsClientId=self.client_id)
+            self.drone_id = p.createMultiBody(
+                baseMass=1.0,
+                baseCollisionShapeIndex=drone_col,
+                baseVisualShapeIndex=drone_vis,
+                basePosition=self.start_pos.tolist(),
+                physicsClientId=self.client_id
+            )
+
+        self._spawn_indoor_obstacles()
+        self.prev_gray_frame = None
+        obs = self._get_observation()
+        info = {"goal_dist": np.linalg.norm(self.start_pos - self.goal_pos)}
+        return obs, info
+
+    def _spawn_indoor_obstacles(self):
+        """Spawns 3D indoor obstacle geometries with bright, distinct colors."""
+        self.obstacle_ids = []
+        self.obstacle_specs = []
+
+        # Room boundary walls (Bright Crisp Light Gray)
+        wall_spec = [
+            ([5.0, 0.1, 2.0], [0.0, 10.0, 2.0], (220, 220, 220)),
+            ([5.0, 0.1, 2.0], [0.0, -10.0, 2.0], (220, 220, 220)),
+            ([0.1, 10.0, 2.0], [5.0, 0.0, 2.0], (200, 200, 200)),
+            ([0.1, 10.0, 2.0], [-5.0, 0.0, 2.0], (200, 200, 200)),
+        ]
+        for half_ext, pos, color in wall_spec:
+            self.obstacle_specs.append({"type": "box", "half_ext": half_ext, "pos": pos, "color": color})
+            if self.pybullet_active:
+                col = p.createCollisionShape(p.GEOM_BOX, halfExtents=half_ext, physicsClientId=self.client_id)
+                vis = p.createVisualShape(p.GEOM_BOX, halfExtents=half_ext, rgbaColor=[0.85, 0.85, 0.85, 1.0], physicsClientId=self.client_id)
+                body = p.createMultiBody(baseMass=0.0, baseCollisionShapeIndex=col, baseVisualShapeIndex=vis, basePosition=pos, physicsClientId=self.client_id)
+                self.obstacle_ids.append(body)
+
+        # Dynamic Obstacles: Bright Orange Cylinders & Emerald Green Cuboids
+        num_obstacles = np.random.randint(6, 12)
+        for _ in range(num_obstacles):
+            obs_type = np.random.choice(["cylinder", "box"])
+            x = np.random.uniform(-3.5, 3.5)
+            y = np.random.uniform(-5.0, 5.0)
+            z = np.random.uniform(1.0, 2.5)
+
+            if obs_type == "cylinder":
+                radius = np.random.uniform(0.35, 0.65)
+                height = np.random.uniform(2.5, 4.0)
+                pos = [x, y, height / 2.0]
+                # Bright Orange/Coral RGB: (255, 100, 40)
+                self.obstacle_specs.append({"type": "cylinder", "radius": radius, "height": height, "pos": pos, "color": (255, 100, 40)})
+                if self.pybullet_active:
+                    col = p.createCollisionShape(p.GEOM_CYLINDER, radius=radius, height=height, physicsClientId=self.client_id)
+                    vis = p.createVisualShape(p.GEOM_CYLINDER, radius=radius, length=height, rgbaColor=[1.0, 0.4, 0.1, 1.0], physicsClientId=self.client_id)
+                    body = p.createMultiBody(baseMass=0.0, baseCollisionShapeIndex=col, baseVisualShapeIndex=vis, basePosition=pos, physicsClientId=self.client_id)
+                    self.obstacle_ids.append(body)
+            else:
+                extents = [np.random.uniform(0.35, 0.65) for _ in range(3)]
+                pos = [x, y, z]
+                # Bright Emerald Green RGB: (40, 220, 110)
+                self.obstacle_specs.append({"type": "box", "half_ext": extents, "pos": pos, "color": (40, 220, 110)})
+                if self.pybullet_active:
+                    col = p.createCollisionShape(p.GEOM_BOX, halfExtents=extents, physicsClientId=self.client_id)
+                    vis = p.createVisualShape(p.GEOM_BOX, halfExtents=extents, rgbaColor=[0.1, 0.85, 0.4, 1.0], physicsClientId=self.client_id)
+                    body = p.createMultiBody(baseMass=0.0, baseCollisionShapeIndex=col, baseVisualShapeIndex=vis, basePosition=pos, physicsClientId=self.client_id)
+                    self.obstacle_ids.append(body)
+
+    def _get_camera_images(self):
+        """Renders high-contrast monocular RGB and Depth frames from front-facing camera."""
+        if self.pybullet_active:
+            pos, orn = p.getBasePositionAndOrientation(self.drone_id, physicsClientId=self.client_id)
+            rot_matrix = p.getMatrixFromQuaternion(orn, physicsClientId=self.client_id)
+            rot_matrix = np.array(rot_matrix).reshape(3, 3)
+
+            forward = rot_matrix @ np.array([0.0, 1.0, 0.0])
+            up = rot_matrix @ np.array([0.0, 0.0, 1.0])
+            cam_pos = np.array(pos) + rot_matrix @ np.array([0.0, 0.2, 0.0])
+            target_pos = cam_pos + forward
+
+            view_matrix = p.computeViewMatrix(
+                cameraEyePosition=cam_pos.tolist(),
+                cameraTargetPosition=target_pos.tolist(),
+                cameraUpVector=up.tolist(),
+                physicsClientId=self.client_id
+            )
+            proj_matrix = p.computeProjectionMatrixFOV(
+                fov=self.fov, aspect=self.aspect, nearVal=self.near_val, farVal=self.far_val, physicsClientId=self.client_id
+            )
+
+            _, _, rgb_img, depth_img, _ = p.getCameraImage(
+                width=self.img_width,
+                height=self.img_height,
+                viewMatrix=view_matrix,
+                projectionMatrix=proj_matrix,
+                renderer=p.ER_TINY_RENDERER,
+                physicsClientId=self.client_id
+            )
+
+            rgb = np.array(rgb_img, dtype=np.uint8).reshape(self.img_height, self.img_width, 4)[:, :, :3]
+            depth_buffer = np.array(depth_img, dtype=np.float32).reshape(self.img_height, self.img_width)
+            depth_meters = self.far_val * self.near_val / (self.far_val - (self.far_val - self.near_val) * depth_buffer)
+            self.last_depth_map = depth_meters
+            return rgb, depth_meters
+        else:
+            # 3D Perspective Raycasting Engine with Bright Ambient Lighting
+            rgb = np.full((self.img_height, self.img_width, 3), (60, 55, 50), dtype=np.uint8)
+            depth_meters = np.full((self.img_height, self.img_width), self.far_val, dtype=np.float32)
+
+            cam_x, cam_y, cam_z = self.drone_pos
+            yaw = self.drone_orn[2]
+            focal_len = (self.img_width / 2.0) / math.tan(math.radians(self.fov / 2.0))
+
+            for py in range(self.img_height):
+                for px in range(self.img_width):
+                    ray_dx = (px - self.img_width / 2.0) / focal_len
+                    ray_dy = 1.0
+                    ray_dz = -(py - self.img_height / 2.0) / focal_len
+
+                    rx = ray_dx * math.cos(yaw) + ray_dy * math.sin(yaw)
+                    ry = -ray_dx * math.sin(yaw) + ray_dy * math.cos(yaw)
+                    rz = ray_dz
+
+                    ray_mag = math.sqrt(rx * rx + ry * ry + rz * rz)
+                    rx, ry, rz = rx / ray_mag, ry / ray_mag, rz / ray_mag
+
+                    min_dist = self.far_val
+                    hit_color = (60, 55, 50)
+
+                    # Intersect floor (z=0)
+                    if rz < -1e-4:
+                        t_floor = (0.0 - cam_z) / rz
+                        if 0 < t_floor < min_dist:
+                            fx = cam_x + rx * t_floor
+                            fy = cam_y + ry * t_floor
+                            check = (int(math.floor(fx)) + int(math.floor(fy))) % 2
+                            min_dist = t_floor
+                            # High-contrast floor tiles (Bright white & Dark slate)
+                            hit_color = (230, 230, 230) if check == 0 else (90, 90, 100)
+
+                    # Intersect obstacles
+                    for spec in self.obstacle_specs:
+                        ox, oy, oz = spec["pos"]
+                        dx = cam_x - ox
+                        dy = cam_y - oy
+
+                        if spec["type"] == "cylinder":
+                            r = spec["radius"]
+                            a = rx * rx + ry * ry
+                            b = 2.0 * (dx * rx + dy * ry)
+                            c = dx * dx + dy * dy - r * r
+                            disc = b * b - 4 * a * c
+                            if disc >= 0 and a > 1e-6:
+                                t_cyl = (-b - math.sqrt(disc)) / (2.0 * a)
+                                if 0 < t_cyl < min_dist:
+                                    hit_z = cam_z + rz * t_cyl
+                                    if 0 <= hit_z <= spec["height"]:
+                                        min_dist = t_cyl
+                                        hit_color = spec["color"]
+                        else:
+                            r_approx = max(spec["half_ext"])
+                            dist_to_center = math.sqrt(dx * dx + dy * dy)
+                            if dist_to_center < min_dist + r_approx:
+                                proj = -(dx * rx + dy * ry)
+                                if 0 < proj < min_dist:
+                                    perp = math.sqrt(max(0, dist_to_center**2 - proj**2))
+                                    if perp < r_approx:
+                                        min_dist = proj
+                                        hit_color = spec["color"]
+
+                    depth_meters[py, px] = min_dist
+                    # Bright ambient shading multiplier
+                    shade = max(0.45, 1.0 - 0.5 * (min_dist / self.far_val))
+                    rgb[py, px] = [int(c * shade) for c in hit_color]
+
+            self.last_depth_map = depth_meters
+            return rgb, depth_meters
+
+    def render_overhead_simulation_view(self, out_size=(380, 380)) -> np.ndarray:
+        """Renders a 3rd-person isometric/overhead view showing drone and obstacles."""
+        view_w, view_h = out_size
+        img = np.full((view_h, view_w, 3), (245, 245, 245), dtype=np.uint8)  # Clean bright background
+
+        # Arena bounds: X in [-5, 5], Y in [-10, 10]
+        def world_to_img(wx, wy):
+            px = int((wx + 5.0) / 10.0 * (view_w - 40) + 20)
+            py = int((10.0 - wy) / 20.0 * (view_h - 40) + 20)
+            return px, py
+
+        # Draw Arena Grid Lines
+        for gx in range(-5, 6, 2):
+            p1 = world_to_img(gx, -10.0)
+            p2 = world_to_img(gx, 10.0)
+            cv2.line(img, p1, p2, (220, 220, 220), 1)
+
+        for gy in range(-10, 11, 2):
+            p1 = world_to_img(-5.0, gy)
+            p2 = world_to_img(5.0, gy)
+            cv2.line(img, p1, p2, (220, 220, 220), 1)
+
+        # Draw Goal Target (Glowing Gold Circle with Pulse)
+        goal_px = world_to_img(self.goal_pos[0], self.goal_pos[1])
+        cv2.circle(img, goal_px, 14, (0, 215, 255), -1)
+        cv2.circle(img, goal_px, 18, (0, 165, 255), 2)
+        cv2.putText(img, "GOAL", (goal_px[0] - 18, goal_px[1] + 4), cv2.FONT_HERSHEY_SIMPLEX, 0.4, (255, 255, 255), 1)
+
+        # Draw Obstacles (Bright Colors)
+        for spec in self.obstacle_specs:
+            ox, oy, _ = spec["pos"]
+            opx = world_to_img(ox, oy)
+            bgr_col = (spec["color"][2], spec["color"][1], spec["color"][0])
+
+            if spec["type"] == "cylinder":
+                r_px = max(6, int(spec.get("radius", 0.4) * 20))
+                cv2.circle(img, opx, r_px, bgr_col, -1)
+                cv2.circle(img, opx, r_px, (40, 40, 40), 1)
+            else:
+                w_px = max(8, int(spec["half_ext"][0] * 20))
+                h_px = max(8, int(spec["half_ext"][1] * 20))
+                top_left = (opx[0] - w_px, opx[1] - h_px)
+                bot_right = (opx[0] + w_px, opx[1] + h_px)
+                cv2.rectangle(img, top_left, bot_right, bgr_col, -1)
+                cv2.rectangle(img, top_left, bot_right, (40, 40, 40), 1)
+
+        # Draw Drone Position & Heading Vector
+        if self.pybullet_active:
+            pos, orn = p.getBasePositionAndOrientation(self.drone_id, physicsClientId=self.client_id)
+            d_x, d_y = pos[0], pos[1]
+            euler = p.getEulerFromQuaternion(orn, physicsClientId=self.client_id)
+            yaw = euler[2]
+        else:
+            d_x, d_y = self.drone_pos[0], self.drone_pos[1]
+            yaw = self.drone_orn[2]
+
+        dpx = world_to_img(d_x, d_y)
+
+        # Draw Drone Quadrotor Frame (Cyan/Blue)
+        cv2.circle(img, dpx, 10, (255, 120, 0), -1)
+        cv2.circle(img, dpx, 12, (255, 255, 255), 2)
+
+        # Drone Heading Arrow
+        hx = dpx[0] + int(20 * math.sin(yaw))
+        hy = dpx[1] - int(20 * math.cos(yaw))
+        cv2.arrowedLine(img, dpx, (hx, hy), (0, 0, 255), 2, tipLength=0.4)
+
+        return img
+
+    def _compute_optical_flow_and_tau(self, current_gray):
+        """Computes fast OpenCV Farneback optical flow and calculates bounded tau^-1 on central 60% ROI."""
+        if self.prev_gray_frame is None:
+            flow = np.zeros((self.img_height, self.img_width, 2), dtype=np.float32)
+            tau_inv_bounded = 0.0
+        else:
+            flow = cv2.calcOpticalFlowFarneback(
+                self.prev_gray_frame,
+                current_gray,
+                None,
+                pyr_scale=0.5,
+                levels=2,
+                winsize=9,
+                iterations=2,
+                poly_n=5,
+                poly_sigma=1.1,
+                flags=0
+            )
+
+            u = flow[:, :, 0]
+            v = flow[:, :, 1]
+
+            du_dx = cv2.Sobel(u, cv2.CV_32F, 1, 0, ksize=3)
+            dv_dy = cv2.Sobel(v, cv2.CV_32F, 0, 1, ksize=3)
+            divergence = du_dx + dv_dy
+
+            roi_divergence = divergence * self.roi_mask
+            mean_expansion = np.mean(roi_divergence[self.roi_mask == 1])
+            tau_inv_bounded = float(np.clip(np.maximum(0.0, mean_expansion), 0.0, self.tau_inv_max))
+
+        self.prev_gray_frame = current_gray.copy()
+        return flow, tau_inv_bounded
+
+    def _get_observation(self):
+        rgb, depth = self._get_camera_images()
+        gray = cv2.cvtColor(rgb, cv2.COLOR_RGB2GRAY)
+        flow, tau_inv = self._compute_optical_flow_and_tau(gray)
+
+        rgb_norm = rgb.astype(np.float32) / 255.0
+        flow_u = flow[:, :, 0:1]
+        flow_v = flow[:, :, 1:2]
+
+        visual_obs = np.concatenate([rgb_norm, flow_u, flow_v], axis=-1)
+        visual_obs = np.transpose(visual_obs, (2, 0, 1)).astype(np.float32)
+
+        if self.pybullet_active:
+            vel, _ = p.getBaseVelocity(self.drone_id, physicsClientId=self.client_id)
+            vel_vec = np.array(vel, dtype=np.float32)
+        else:
+            vel_vec = self.drone_vel.copy()
+
+        self.current_tau_inv = tau_inv
+        return {"visual": visual_obs, "velocity": vel_vec}
+
+    def _clamp_to_arena(self, pos):
+        """Returns (clamped_pos, was_oob). Keeps drone inside hard arena limits."""
+        x = float(np.clip(pos[0], -self.ARENA_X_LIM, self.ARENA_X_LIM))
+        y = float(np.clip(pos[1], -self.ARENA_Y_LIM, self.ARENA_Y_LIM))
+        z = float(np.clip(pos[2],  self.ARENA_Z_MIN,  self.ARENA_Z_MAX))
+        oob = (x != float(pos[0])) or (y != float(pos[1])) or (z != float(pos[2]))
+        return [x, y, z], oob
+
+    def step(self, action):
+        action = np.clip(action, -1.0, 1.0)
+        target_vel = action[:3] * 3.0
+        yaw_rate = action[3] * 1.0
+        self.out_of_bounds = False
+
+        for _ in range(self.physics_substeps):
+            if self.pybullet_active:
+                p.resetBaseVelocity(
+                    self.drone_id,
+                    linearVelocity=target_vel.tolist(),
+                    angularVelocity=[0.0, 0.0, float(yaw_rate)],
+                    physicsClientId=self.client_id
+                )
+                p.stepSimulation(physicsClientId=self.client_id)
+                # Hard clamp position every substep — prevents tunneling regardless of speed
+                raw_pos, raw_orn = p.getBasePositionAndOrientation(
+                    self.drone_id, physicsClientId=self.client_id
+                )
+                clamped, oob = self._clamp_to_arena(raw_pos)
+                if oob:
+                    self.out_of_bounds = True
+                    p.resetBasePositionAndOrientation(
+                        self.drone_id, clamped, raw_orn, physicsClientId=self.client_id
+                    )
+                    p.resetBaseVelocity(
+                        self.drone_id, [0, 0, 0], [0, 0, 0], physicsClientId=self.client_id
+                    )
+            else:
+                self.drone_vel = target_vel.copy()
+                self.drone_orn[2] += yaw_rate * self.dt
+                self.drone_pos += self.drone_vel * self.dt
+                clamped, oob = self._clamp_to_arena(self.drone_pos)
+                if oob:
+                    self.out_of_bounds = True
+                    self.drone_pos = np.array(clamped, dtype=np.float32)
+                    self.drone_vel = np.zeros(3, dtype=np.float32)
+
+        self.current_step += 1
+        obs = self._get_observation()
+
+        if self.pybullet_active:
+            pos, orn = p.getBasePositionAndOrientation(self.drone_id, physicsClientId=self.client_id)
+            pos = np.array(pos, dtype=np.float32)
+            euler = p.getEulerFromQuaternion(orn, physicsClientId=self.client_id)
+            roll, pitch, yaw = euler[0], euler[1], euler[2]
+            contact_points = p.getContactPoints(bodyA=self.drone_id, physicsClientId=self.client_id)
+            collision = len(contact_points) > 0
+        else:
+            pos = self.drone_pos.copy()
+            roll, pitch, yaw = self.drone_orn[0], self.drone_orn[1], self.drone_orn[2]
+            collision = False
+            for spec in self.obstacle_specs:
+                ox, oy, _ = spec["pos"]
+                dist = np.linalg.norm(pos[:2] - np.array([ox, oy]))
+                obs_r = spec.get("radius", 0.4)
+                if dist < (obs_r + 0.25):
+                    collision = True
+                    break
+
+        # Out-of-bounds = wall collision
+        if self.out_of_bounds:
+            collision = True
+
+        dist_to_goal = np.linalg.norm(pos - self.goal_pos)
+        goal_reached = dist_to_goal < 0.8
+
+        # Progress reward (positive for moving closer to target)
+        if not hasattr(self, "prev_dist_to_goal") or self.prev_dist_to_goal is None:
+            self.prev_dist_to_goal = np.linalg.norm(self.start_pos - self.goal_pos)
+
+        r_progress = 6.0 * (self.prev_dist_to_goal - dist_to_goal)
+        self.prev_dist_to_goal = dist_to_goal
+
+        goal_dir = (self.goal_pos - pos) / (dist_to_goal + 1e-6)
+        r_goal = 3.0 * float(np.dot(obs["velocity"], goal_dir))
+        r_ttc = -2.0 * self.current_tau_inv
+        r_attitude = -0.5 * (abs(roll) + abs(pitch))
+
+        # Proximity safety penalty: penalizes getting within 1.5m of obstacles/walls
+        r_proximity = 0.0
+        if self.last_depth_map is not None:
+            min_depth = float(np.percentile(self.last_depth_map, 5))
+            if min_depth < 1.5:
+                r_proximity = -3.0 * (1.5 - min_depth)
+
+        reward = r_progress + r_goal + r_ttc + r_attitude + r_proximity
+
+        terminated = False
+        truncated = False
+
+        if collision:
+            reward -= 100.0
+            terminated = True
+        elif goal_reached:
+            reward += 100.0
+            terminated = True
+        elif self.current_step >= self.max_steps:
+            truncated = True
+
+        info = {
+            "dist_to_goal": dist_to_goal,
+            "tau_inv": self.current_tau_inv,
+            "collision": collision,
+            "goal_reached": goal_reached,
+        }
+
+        return obs, reward, terminated, truncated, info
+
+    def close(self):
+        if self.pybullet_active and p.isConnected(self.client_id):
+            p.disconnect(physicsClientId=self.client_id)
