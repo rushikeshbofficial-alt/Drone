@@ -50,8 +50,8 @@ Protected files (NEVER overwrite):
 |---|------|-------|-------------|--------|
 | **Gate 0** | Recon & Profiling | A1 `RECON.md`, baseline reproduction, stopping dynamics, `environment.py` accessors; A4 `PERF.md` SPS profiling | None | DONE |
 | **Gate 1** | Shield Implementation & Tuning | A2 `drone_shield.py`, A3 `eval_shield.py`, `--shield` flag, tuning on seeds 2000–2029, crash forensics | Gate 0 | DONE |
-| **Gate 2** | Held-Out Certification | Run ONCE on held-out seeds 1000–1049, verify targets (collision <= 2%, success >= 85%, timeout <= 5%), tag `shield-v1` | Gate 1 | IN_PROGRESS |
-| **Gate 3** | Policy Distillation | A5 `shield_dagger.py`, DAgger training, validation on tuning seeds, final held-out certification | Gate 2 | PLANNED |
+| **Gate 2** | Held-Out Certification | Run ONCE on held-out seeds 1000–1049, verify targets (collision <= 2%, success >= 85%, timeout <= 5%), tag `shield-v1` | Gate 1 | DONE |
+| **Gate 3** | Policy Distillation | A5 `shield_dagger.py`, DAgger training, validation on tuning seeds, final held-out certification | Gate 2 | IN_PROGRESS |
 
 ## Seed Protocol
 - Reference seeds: `[101, 202, 303, 404, 505]` — reproduction and reference check.
