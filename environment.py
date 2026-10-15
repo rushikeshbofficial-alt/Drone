@@ -159,7 +159,7 @@ class IndoorDroneNavEnv(gym.Env):
 
     def _spawn_indoor_obstacles(self):
         """Spawns 3D indoor obstacle geometries with bright, distinct colors."""
-        self.obstacle_ids = []
+        self._obstacle_ids = []
         self.obstacle_specs = []
 
         # Room boundary walls (Bright Crisp Light Gray)
@@ -175,7 +175,7 @@ class IndoorDroneNavEnv(gym.Env):
                 col = p.createCollisionShape(p.GEOM_BOX, halfExtents=half_ext, physicsClientId=self.client_id)
                 vis = p.createVisualShape(p.GEOM_BOX, halfExtents=half_ext, rgbaColor=[0.85, 0.85, 0.85, 1.0], physicsClientId=self.client_id)
                 body = p.createMultiBody(baseMass=0.0, baseCollisionShapeIndex=col, baseVisualShapeIndex=vis, basePosition=pos, physicsClientId=self.client_id)
-                self.obstacle_ids.append(body)
+                self._obstacle_ids.append(body)
 
         # Dynamic Obstacles: Bright Orange Cylinders & Emerald Green Cuboids
         num_obstacles = np.random.randint(6, 12)
@@ -195,7 +195,7 @@ class IndoorDroneNavEnv(gym.Env):
                     col = p.createCollisionShape(p.GEOM_CYLINDER, radius=radius, height=height, physicsClientId=self.client_id)
                     vis = p.createVisualShape(p.GEOM_CYLINDER, radius=radius, length=height, rgbaColor=[1.0, 0.4, 0.1, 1.0], physicsClientId=self.client_id)
                     body = p.createMultiBody(baseMass=0.0, baseCollisionShapeIndex=col, baseVisualShapeIndex=vis, basePosition=pos, physicsClientId=self.client_id)
-                    self.obstacle_ids.append(body)
+                    self._obstacle_ids.append(body)
             else:
                 extents = [np.random.uniform(0.35, 0.65) for _ in range(3)]
                 pos = [x, y, z]
@@ -205,7 +205,7 @@ class IndoorDroneNavEnv(gym.Env):
                     col = p.createCollisionShape(p.GEOM_BOX, halfExtents=extents, physicsClientId=self.client_id)
                     vis = p.createVisualShape(p.GEOM_BOX, halfExtents=extents, rgbaColor=[0.1, 0.85, 0.4, 1.0], physicsClientId=self.client_id)
                     body = p.createMultiBody(baseMass=0.0, baseCollisionShapeIndex=col, baseVisualShapeIndex=vis, basePosition=pos, physicsClientId=self.client_id)
-                    self.obstacle_ids.append(body)
+                    self._obstacle_ids.append(body)
 
     def _get_camera_images(self):
         """Renders high-contrast monocular RGB and Depth frames from front-facing camera."""
@@ -466,7 +466,7 @@ class IndoorDroneNavEnv(gym.Env):
                     )
             else:
                 self.drone_vel = target_vel.copy()
-                self.drone_orn[2] += yaw_rate * self.dt
+                self._drone_orn[2] += yaw_rate * self.dt
                 self.drone_pos += self.drone_vel * self.dt
                 clamped, oob = self._clamp_to_arena(self.drone_pos)
                 if oob:
@@ -584,3 +584,130 @@ class IndoorDroneNavEnv(gym.Env):
     def close(self):
         if self.pybullet_active and p.isConnected(self.client_id):
             p.disconnect(physicsClientId=self.client_id)
+
+    # ── Read-Only Property Accessors (Gate 0 SHR Interface Contracts) ───────────
+
+    @property
+    def drone_pos(self) -> np.ndarray:
+        """Returns a copy of the drone's world-frame position [x, y, z] in meters."""
+        if self.pybullet_active and getattr(self, "drone_id", None) is not None:
+            pos, _ = p.getBasePositionAndOrientation(self.drone_id, physicsClientId=self.client_id)
+            return np.array(pos, dtype=np.float32)
+        val = getattr(self, "_drone_pos", None)
+        if val is None:
+            return np.array([0.0, -8.0, 1.5], dtype=np.float32)
+        return np.array(val, dtype=np.float32, copy=True)
+
+    @drone_pos.setter
+    def drone_pos(self, value):
+        self._drone_pos = np.array(value, dtype=np.float32)
+
+    @property
+    def drone_vel(self) -> np.ndarray:
+        """Returns a copy of the drone's world-frame linear velocity [vx, vy, vz] in m/s."""
+        if self.pybullet_active and getattr(self, "drone_id", None) is not None:
+            vel, _ = p.getBaseVelocity(self.drone_id, physicsClientId=self.client_id)
+            return np.array(vel, dtype=np.float32)
+        val = getattr(self, "_drone_vel", None)
+        if val is None:
+            return np.zeros(3, dtype=np.float32)
+        return np.array(val, dtype=np.float32, copy=True)
+
+    @drone_vel.setter
+    def drone_vel(self, value):
+        self._drone_vel = np.array(value, dtype=np.float32)
+
+    @property
+    def drone_orientation(self) -> np.ndarray:
+        """
+        Returns a copy of the drone's orientation.
+        In PyBullet mode: quaternion [x, y, z, w].
+        In analytical mode: Euler angles [roll, pitch, yaw] in radians.
+        """
+        if self.pybullet_active and getattr(self, "drone_id", None) is not None:
+            _, orn = p.getBasePositionAndOrientation(self.drone_id, physicsClientId=self.client_id)
+            return np.array(orn, dtype=np.float32)
+        val = getattr(self, "_drone_orn", None)
+        if val is None:
+            return np.zeros(3, dtype=np.float32)
+        return np.array(val, dtype=np.float32, copy=True)
+
+    @property
+    def drone_orn(self) -> np.ndarray:
+        """Returns a copy of the drone's Euler angles [roll, pitch, yaw] in radians."""
+        if self.pybullet_active and getattr(self, "drone_id", None) is not None:
+            _, orn = p.getBasePositionAndOrientation(self.drone_id, physicsClientId=self.client_id)
+            euler = p.getEulerFromQuaternion(orn, physicsClientId=self.client_id)
+            return np.array(euler, dtype=np.float32)
+        val = getattr(self, "_drone_orn", None)
+        if val is None:
+            return np.zeros(3, dtype=np.float32)
+        return np.array(val, dtype=np.float32, copy=True)
+
+    @drone_orn.setter
+    def drone_orn(self, value):
+        self._drone_orn = np.array(value, dtype=np.float32)
+
+    @property
+    def last_depth_image(self) -> np.ndarray:
+        """Returns a copy of the latest raw camera depth map in meters (84x84 float32)."""
+        val = getattr(self, "_last_depth_map", None)
+        if val is None:
+            return np.full((self.img_height, self.img_width), self.far_val, dtype=np.float32)
+        return np.array(val, dtype=np.float32, copy=True)
+
+    @property
+    def last_depth_map(self):
+        """Returns a copy of the latest raw depth map or None if uninitialized."""
+        val = getattr(self, "_last_depth_map", None)
+        if val is None:
+            return None
+        return np.array(val, dtype=np.float32, copy=True)
+
+    @last_depth_map.setter
+    def last_depth_map(self, value):
+        self._last_depth_map = value
+
+    @property
+    def obstacle_ids(self) -> list:
+        """Returns a copy of the list of obstacle IDs."""
+        val = getattr(self, "_obstacle_ids", None)
+        if val is None:
+            return []
+        return list(val)
+
+    @obstacle_ids.setter
+    def obstacle_ids(self, value):
+        self._obstacle_ids = list(value)
+
+    @property
+    def obstacle_positions(self) -> list:
+        """Returns a list of obstacle center positions [(x, y, z), ...] as float32 numpy arrays."""
+        return [np.array(spec["pos"], dtype=np.float32, copy=True) for spec in getattr(self, "obstacle_specs", [])]
+
+    @property
+    def obstacle_geometries(self) -> list:
+        """Returns a deep copy of obstacle specification dictionaries."""
+        import copy
+        return copy.deepcopy(getattr(self, "obstacle_specs", []))
+
+    @property
+    def goal_position(self) -> np.ndarray:
+        """Returns a copy of the goal position [x, y, z] in meters."""
+        return np.array(self.goal_pos, dtype=np.float32, copy=True)
+
+    @property
+    def start_position(self) -> np.ndarray:
+        """Returns a copy of the start position [x, y, z] in meters."""
+        return np.array(self.start_pos, dtype=np.float32, copy=True)
+
+    @property
+    def arena_bounds(self) -> dict:
+        """Returns the hard arena limits."""
+        return {
+            "x_lim": self.ARENA_X_LIM,
+            "y_lim": self.ARENA_Y_LIM,
+            "z_min": self.ARENA_Z_MIN,
+            "z_max": self.ARENA_Z_MAX,
+        }
+
