@@ -1,0 +1,2581 @@
+{
+  "title": "Stop, Hover & Re-Route (SHR) Drone Safety Shield Benchmark Report",
+  "timestamp": "2026-10-15T22:40:18Z",
+  "checkpoint": "best_model.pt",
+  "seeds_str": "2005,2011,2015,2016,2018,2021,2022",
+  "seeds": [
+    2005,
+    2011,
+    2015,
+    2016,
+    2018,
+    2021,
+    2022
+  ],
+  "configurations": {
+    "shield_oracle": {
+      "config_name": "Shield ON (oracle)",
+      "shield_enabled": true,
+      "sensor_mode": "oracle",
+      "shield_kwargs": {},
+      "num_episodes": 7,
+      "duration_sec": 8.97,
+      "rates": {
+        "SUCCESS": {
+          "count": 6,
+          "rate": 85.71,
+          "ci_95": [
+            48.69,
+            97.43
+          ],
+          "formatted": " 85.7% [48.7%, 97.4%] (6/7)"
+        },
+        "OBSTACLE_COLLISION": {
+          "count": 0,
+          "rate": 0.0,
+          "ci_95": [
+            0.0,
+            35.43
+          ],
+          "formatted": "  0.0% [ 0.0%, 35.4%] (0/7)"
+        },
+        "WALL_OOB": {
+          "count": 0,
+          "rate": 0.0,
+          "ci_95": [
+            0.0,
+            35.43
+          ],
+          "formatted": "  0.0% [ 0.0%, 35.4%] (0/7)"
+        },
+        "TOTAL_COLLISION": {
+          "count": 0,
+          "rate": 0.0,
+          "ci_95": [
+            0.0,
+            35.43
+          ],
+          "formatted": "  0.0% [ 0.0%, 35.4%] (0/7)"
+        },
+        "TIMEOUT": {
+          "count": 1,
+          "rate": 14.29,
+          "ci_95": [
+            2.57,
+            51.31
+          ],
+          "formatted": " 14.3% [ 2.6%, 51.3%] (1/7)"
+        }
+      },
+      "statistics": {
+        "mean_reward": -690.27,
+        "std_reward": 817.51,
+        "mean_steps": 304.4,
+        "std_steps": 92.9,
+        "mean_min_clearance": 0.132,
+        "std_min_clearance": 0.098,
+        "mean_interventions_pct": 57.1,
+        "mean_standoff_distance": 1.646,
+        "mean_stop_latency": 1.0,
+        "state_distribution_pct": {
+          "NOMINAL": 61.4,
+          "BRAKE": 3.1,
+          "SCAN": 4.3,
+          "REROUTE": 23.3,
+          "RETREAT": 7.9,
+          "DISABLED": 0.0
+        }
+      },
+      "episodes": [
+        {
+          "seed": 2005,
+          "outcome": "SUCCESS",
+          "steps": 241,
+          "reward": -42.29,
+          "min_clearance": 0.046,
+          "interventions_count": 146,
+          "interventions_pct": 60.6,
+          "state_counts": {
+            "NOMINAL": 169,
+            "BRAKE": 6,
+            "SCAN": 6,
+            "REROUTE": 60,
+            "RETREAT": 0,
+            "DISABLED": 0
+          },
+          "stop_latency": 1,
+          "standoff_distance": 0.506,
+          "cause_of_failure": "N/A - Goal reached successfully.",
+          "last_10_steps": [
+            {
+              "step": 232,
+              "pos": [
+                -0.538,
+                6.359,
+                1.495
+              ],
+              "vel": [
+                0.563,
+                2.428,
+                -0.003
+              ],
+              "speed": 2.492,
+              "clearance": 3.144,
+              "shield_state": "NOMINAL",
+              "policy_action": [
+                0.188,
+                0.809,
+                -0.001,
+                -0.001
+              ],
+              "executed_action": [
+                0.188,
+                0.809,
+                -0.001,
+                -0.001
+              ],
+              "intervened": false
+            },
+            {
+              "step": 233,
+              "pos": [
+                -0.511,
+                6.459,
+                1.495
+              ],
+              "vel": [
+                0.629,
+                2.392,
+                0.003
+              ],
+              "speed": 2.473,
+              "clearance": 3.045,
+              "shield_state": "NOMINAL",
+              "policy_action": [
+                0.21,
+                0.797,
+                0.001,
+                -0.001
+              ],
+              "executed_action": [
+                0.21,
+                0.797,
+                0.001,
+                -0.001
+              ],
+              "intervened": false
+            },
+            {
+              "step": 234,
+              "pos": [
+                -0.478,
+                6.558,
+                1.496
+              ],
+              "vel": [
+                0.806,
+                2.371,
+                0.021
+              ],
+              "speed": 2.504,
+              "clearance": 2.951,
+              "shield_state": "NOMINAL",
+              "policy_action": [
+                0.269,
+                0.79,
+                0.007,
+                0.002
+              ],
+              "executed_action": [
+                0.269,
+                0.79,
+                0.007,
+                0.002
+              ],
+              "intervened": false
+            },
+            {
+              "step": 235,
+              "pos": [
+                -0.448,
+                6.657,
+                1.496
+              ],
+              "vel": [
+                0.724,
+                2.372,
+                -0.002
+              ],
+              "speed": 2.48,
+              "clearance": 2.843,
+              "shield_state": "NOMINAL",
+              "policy_action": [
+                0.241,
+                0.791,
+                -0.001,
+                0.003
+              ],
+              "executed_action": [
+                0.241,
+                0.791,
+                -0.001,
+                0.003
+              ],
+              "intervened": false
+            },
+            {
+              "step": 236,
+              "pos": [
+                -0.416,
+                6.756,
+                1.496
+              ],
+              "vel": [
+                0.763,
+                2.381,
+                -0.002
+              ],
+              "speed": 2.5,
+              "clearance": 2.747,
+              "shield_state": "NOMINAL",
+              "policy_action": [
+                0.254,
+                0.794,
+                -0.001,
+                -0.001
+              ],
+              "executed_action": [
+                0.254,
+                0.794,
+                -0.001,
+                -0.001
+              ],
+              "intervened": false
+            },
+            {
+              "step": 237,
+              "pos": [
+                -0.381,
+                6.857,
+                1.496
+              ],
+              "vel": [
+                0.832,
+                2.421,
+                -0.004
+              ],
+              "speed": 2.56,
+              "clearance": 2.646,
+              "shield_state": "NOMINAL",
+              "policy_action": [
+                0.277,
+                0.807,
+                -0.001,
+                0.005
+              ],
+              "executed_action": [
+                0.277,
+                0.807,
+                -0.001,
+                0.005
+              ],
+              "intervened": false
+            },
+            {
+              "step": 238,
+              "pos": [
+                -0.344,
+                6.959,
+                1.496
+              ],
+              "vel": [
+                0.891,
+                2.456,
+                -0.005
+              ],
+              "speed": 2.613,
+              "clearance": 2.544,
+              "shield_state": "NOMINAL",
+              "policy_action": [
+                0.297,
+                0.819,
+                -0.002,
+                0.005
+              ],
+              "executed_action": [
+                0.297,
+                0.819,
+                -0.002,
+                0.005
+              ],
+              "intervened": false
+            },
+            {
+              "step": 239,
+              "pos": [
+                -0.304,
+                7.062,
+                1.495
+              ],
+              "vel": [
+                0.959,
+                2.48,
+                -0.006
+              ],
+              "speed": 2.659,
+              "clearance": 2.441,
+              "shield_state": "NOMINAL",
+              "policy_action": [
+                0.32,
+                0.827,
+                -0.002,
+                0.005
+              ],
+              "executed_action": [
+                0.32,
+                0.827,
+                -0.002,
+                0.005
+              ],
+              "intervened": false
+            },
+            {
+              "step": 240,
+              "pos": [
+                -0.261,
+                7.166,
+                1.495
+              ],
+              "vel": [
+                1.035,
+                2.493,
+                -0.007
+              ],
+              "speed": 2.699,
+              "clearance": 2.338,
+              "shield_state": "NOMINAL",
+              "policy_action": [
+                0.345,
+                0.831,
+                -0.002,
+                0.006
+              ],
+              "executed_action": [
+                0.345,
+                0.831,
+                -0.002,
+                0.006
+              ],
+              "intervened": false
+            },
+            {
+              "step": 241,
+              "pos": [
+                -0.214,
+                7.27,
+                1.495
+              ],
+              "vel": [
+                1.116,
+                2.495,
+                -0.008
+              ],
+              "speed": 2.733,
+              "clearance": 2.236,
+              "shield_state": "NOMINAL",
+              "policy_action": [
+                0.372,
+                0.832,
+                -0.003,
+                0.006
+              ],
+              "executed_action": [
+                0.372,
+                0.832,
+                -0.003,
+                0.006
+              ],
+              "intervened": false
+            }
+          ]
+        },
+        {
+          "seed": 2011,
+          "outcome": "TIMEOUT",
+          "steps": 500,
+          "reward": -2586.24,
+          "min_clearance": 0.201,
+          "interventions_count": 459,
+          "interventions_pct": 91.8,
+          "state_counts": {
+            "NOMINAL": 139,
+            "BRAKE": 17,
+            "SCAN": 41,
+            "REROUTE": 135,
+            "RETREAT": 168,
+            "DISABLED": 0
+          },
+          "stop_latency": 1,
+          "standoff_distance": 1.38,
+          "cause_of_failure": "Exceeded maximum episode limit (500 steps) without reaching goal.",
+          "last_10_steps": [
+            {
+              "step": 491,
+              "pos": [
+                1.942,
+                -0.885,
+                1.501
+              ],
+              "vel": [
+                0.0,
+                -0.8,
+                -0.002
+              ],
+              "speed": 0.8,
+              "clearance": 4.916,
+              "shield_state": "RETREAT",
+              "policy_action": [
+                -0.139,
+                0.964,
+                0.014,
+                0.019
+              ],
+              "executed_action": [
+                0.0,
+                -0.267,
+                -0.001,
+                0.0
+              ],
+              "intervened": true
+            },
+            {
+              "step": 492,
+              "pos": [
+                1.942,
+                -0.918,
+                1.501
+              ],
+              "vel": [
+                0.0,
+                -0.8,
+                -0.002
+              ],
+              "speed": 0.8,
+              "clearance": 4.916,
+              "shield_state": "RETREAT",
+              "policy_action": [
+                0.057,
+                0.953,
+                0.016,
+                0.007
+              ],
+              "executed_action": [
+                0.0,
+                -0.267,
+                -0.001,
+                0.0
+              ],
+              "intervened": true
+            },
+            {
+              "step": 493,
+              "pos": [
+                1.942,
+                -0.951,
+                1.501
+              ],
+              "vel": [
+                0.0,
+                -0.8,
+                -0.002
+              ],
+              "speed": 0.8,
+              "clearance": 4.916,
+              "shield_state": "RETREAT",
+              "policy_action": [
+                -0.209,
+                0.965,
+                0.017,
+                0.023
+              ],
+              "executed_action": [
+                0.0,
+                -0.267,
+                -0.001,
+                0.0
+              ],
+              "intervened": true
+            },
+            {
+              "step": 494,
+              "pos": [
+                1.942,
+                -0.985,
+                1.501
+              ],
+              "vel": [
+                0.0,
+                -0.8,
+                -0.002
+              ],
+              "speed": 0.8,
+              "clearance": 4.916,
+              "shield_state": "SCAN",
+              "policy_action": [
+                -0.304,
+                0.968,
+                0.017,
+                0.03
+              ],
+              "executed_action": [
+                0.0,
+                -0.267,
+                -0.001,
+                0.0
+              ],
+              "intervened": true
+            },
+            {
+              "step": 495,
+              "pos": [
+                2.0,
+                -0.985,
+                1.501
+              ],
+              "vel": [
+                1.4,
+                0.0,
+                -0.002
+              ],
+              "speed": 1.4,
+              "clearance": 4.916,
+              "shield_state": "REROUTE",
+              "policy_action": [
+                0.44,
+                0.924,
+                0.042,
+                0.001
+              ],
+              "executed_action": [
+                0.467,
+                0.0,
+                -0.001,
+                0.0
+              ],
+              "intervened": true
+            },
+            {
+              "step": 496,
+              "pos": [
+                2.058,
+                -0.918,
+                1.501
+              ],
+              "vel": [
+                1.4,
+                1.6,
+                -0.002
+              ],
+              "speed": 2.126,
+              "clearance": 0.584,
+              "shield_state": "REROUTE",
+              "policy_action": [
+                -0.407,
+                0.778,
+                -0.04,
+                -0.017
+              ],
+              "executed_action": [
+                0.467,
+                0.533,
+                -0.001,
+                0.0
+              ],
+              "intervened": true
+            },
+            {
+              "step": 497,
+              "pos": [
+                2.07,
+                -0.899,
+                1.501
+              ],
+              "vel": [
+                0.266,
+                0.455,
+                -0.001
+              ],
+              "speed": 0.527,
+              "clearance": 0.496,
+              "shield_state": "NOMINAL",
+              "policy_action": [
+                0.298,
+                0.509,
+                -0.0,
+                -0.008
+              ],
+              "executed_action": [
+                0.089,
+                0.152,
+                -0.0,
+                -0.008
+              ],
+              "intervened": true
+            },
+            {
+              "step": 498,
+              "pos": [
+                2.071,
+                -0.883,
+                1.501
+              ],
+              "vel": [
+                0.042,
+                0.392,
+                0.017
+              ],
+              "speed": 0.395,
+              "clearance": 0.476,
+              "shield_state": "NOMINAL",
+              "policy_action": [
+                0.076,
+                0.708,
+                0.006,
+                0.004
+              ],
+              "executed_action": [
+                0.014,
+                0.131,
+                0.006,
+                0.004
+              ],
+              "intervened": true
+            },
+            {
+              "step": 499,
+              "pos": [
+                2.078,
+                -0.873,
+                1.504
+              ],
+              "vel": [
+                0.171,
+                0.241,
+                0.066
+              ],
+              "speed": 0.296,
+              "clearance": 0.465,
+              "shield_state": "NOMINAL",
+              "policy_action": [
+                0.454,
+                0.64,
+                0.022,
+                0.002
+              ],
+              "executed_action": [
+                0.057,
+                0.08,
+                0.022,
+                0.002
+              ],
+              "intervened": true
+            },
+            {
+              "step": 500,
+              "pos": [
+                2.082,
+                -0.869,
+                1.505
+              ],
+              "vel": [
+                0.076,
+                0.086,
+                0.015
+              ],
+              "speed": 0.115,
+              "clearance": 0.452,
+              "shield_state": "NOMINAL",
+              "policy_action": [
+                0.671,
+                0.759,
+                0.005,
+                -0.012
+              ],
+              "executed_action": [
+                0.025,
+                0.029,
+                0.005,
+                -0.012
+              ],
+              "intervened": true
+            }
+          ]
+        },
+        {
+          "seed": 2015,
+          "outcome": "SUCCESS",
+          "steps": 236,
+          "reward": -335.11,
+          "min_clearance": 0.317,
+          "interventions_count": 61,
+          "interventions_pct": 25.8,
+          "state_counts": {
+            "NOMINAL": 200,
+            "BRAKE": 3,
+            "SCAN": 3,
+            "REROUTE": 30,
+            "RETREAT": 0,
+            "DISABLED": 0
+          },
+          "stop_latency": 1,
+          "standoff_distance": 0.745,
+          "cause_of_failure": "N/A - Goal reached successfully.",
+          "last_10_steps": [
+            {
+              "step": 227,
+              "pos": [
+                0.426,
+                6.517,
+                1.493
+              ],
+              "vel": [
+                -0.884,
+                2.109,
+                0.025
+              ],
+              "speed": 2.287,
+              "clearance": 2.981,
+              "shield_state": "NOMINAL",
+              "policy_action": [
+                -0.295,
+                0.703,
+                0.008,
+                -0.007
+              ],
+              "executed_action": [
+                -0.295,
+                0.703,
+                0.008,
+                -0.007
+              ],
+              "intervened": false
+            },
+            {
+              "step": 228,
+              "pos": [
+                0.388,
+                6.601,
+                1.493
+              ],
+              "vel": [
+                -0.901,
+                2.004,
+                -0.014
+              ],
+              "speed": 2.198,
+              "clearance": 2.886,
+              "shield_state": "NOMINAL",
+              "policy_action": [
+                -0.3,
+                0.668,
+                -0.005,
+                0.003
+              ],
+              "executed_action": [
+                -0.3,
+                0.668,
+                -0.005,
+                0.003
+              ],
+              "intervened": false
+            },
+            {
+              "step": 229,
+              "pos": [
+                0.345,
+                6.682,
+                1.493
+              ],
+              "vel": [
+                -1.041,
+                1.937,
+                -0.0
+              ],
+              "speed": 2.199,
+              "clearance": 2.807,
+              "shield_state": "NOMINAL",
+              "policy_action": [
+                -0.347,
+                0.646,
+                -0.0,
+                -0.005
+              ],
+              "executed_action": [
+                -0.347,
+                0.646,
+                -0.0,
+                -0.005
+              ],
+              "intervened": false
+            },
+            {
+              "step": 230,
+              "pos": [
+                0.303,
+                6.759,
+                1.492
+              ],
+              "vel": [
+                -1.006,
+                1.856,
+                -0.024
+              ],
+              "speed": 2.111,
+              "clearance": 2.72,
+              "shield_state": "NOMINAL",
+              "policy_action": [
+                -0.335,
+                0.619,
+                -0.008,
+                0.003
+              ],
+              "executed_action": [
+                -0.335,
+                0.619,
+                -0.008,
+                0.003
+              ],
+              "intervened": false
+            },
+            {
+              "step": 231,
+              "pos": [
+                0.262,
+                6.838,
+                1.491
+              ],
+              "vel": [
+                -0.982,
+                1.889,
+                -0.007
+              ],
+              "speed": 2.129,
+              "clearance": 2.642,
+              "shield_state": "NOMINAL",
+              "policy_action": [
+                -0.327,
+                0.63,
+                -0.002,
+                -0.001
+              ],
+              "executed_action": [
+                -0.327,
+                0.63,
+                -0.002,
+                -0.001
+              ],
+              "intervened": false
+            },
+            {
+              "step": 232,
+              "pos": [
+                0.224,
+                6.917,
+                1.491
+              ],
+              "vel": [
+                -0.899,
+                1.899,
+                -0.009
+              ],
+              "speed": 2.101,
+              "clearance": 2.565,
+              "shield_state": "NOMINAL",
+              "policy_action": [
+                -0.3,
+                0.633,
+                -0.003,
+                0.0
+              ],
+              "executed_action": [
+                -0.3,
+                0.633,
+                -0.003,
+                0.0
+              ],
+              "intervened": false
+            },
+            {
+              "step": 233,
+              "pos": [
+                0.19,
+                6.996,
+                1.491
+              ],
+              "vel": [
+                -0.827,
+                1.912,
+                -0.008
+              ],
+              "speed": 2.083,
+              "clearance": 2.492,
+              "shield_state": "NOMINAL",
+              "policy_action": [
+                -0.276,
+                0.637,
+                -0.003,
+                0.0
+              ],
+              "executed_action": [
+                -0.276,
+                0.637,
+                -0.003,
+                0.0
+              ],
+              "intervened": false
+            },
+            {
+              "step": 234,
+              "pos": [
+                0.158,
+                7.077,
+                1.491
+              ],
+              "vel": [
+                -0.765,
+                1.932,
+                -0.007
+              ],
+              "speed": 2.078,
+              "clearance": 2.408,
+              "shield_state": "NOMINAL",
+              "policy_action": [
+                -0.255,
+                0.644,
+                -0.002,
+                0.0
+              ],
+              "executed_action": [
+                -0.255,
+                0.644,
+                -0.002,
+                0.0
+              ],
+              "intervened": false
+            },
+            {
+              "step": 235,
+              "pos": [
+                0.129,
+                7.159,
+                1.49
+              ],
+              "vel": [
+                -0.711,
+                1.963,
+                -0.005
+              ],
+              "speed": 2.087,
+              "clearance": 2.324,
+              "shield_state": "NOMINAL",
+              "policy_action": [
+                -0.237,
+                0.654,
+                -0.002,
+                0.001
+              ],
+              "executed_action": [
+                -0.237,
+                0.654,
+                -0.002,
+                0.001
+              ],
+              "intervened": false
+            },
+            {
+              "step": 236,
+              "pos": [
+                0.101,
+                7.242,
+                1.49
+              ],
+              "vel": [
+                -0.663,
+                2.005,
+                -0.004
+              ],
+              "speed": 2.112,
+              "clearance": 2.241,
+              "shield_state": "NOMINAL",
+              "policy_action": [
+                -0.221,
+                0.668,
+                -0.001,
+                0.001
+              ],
+              "executed_action": [
+                -0.221,
+                0.668,
+                -0.001,
+                0.001
+              ],
+              "intervened": false
+            }
+          ]
+        },
+        {
+          "seed": 2016,
+          "outcome": "SUCCESS",
+          "steps": 297,
+          "reward": -449.36,
+          "min_clearance": 0.053,
+          "interventions_count": 190,
+          "interventions_pct": 64.0,
+          "state_counts": {
+            "NOMINAL": 183,
+            "BRAKE": 10,
+            "SCAN": 10,
+            "REROUTE": 94,
+            "RETREAT": 0,
+            "DISABLED": 0
+          },
+          "stop_latency": 1,
+          "standoff_distance": 2.971,
+          "cause_of_failure": "N/A - Goal reached successfully.",
+          "last_10_steps": [
+            {
+              "step": 288,
+              "pos": [
+                0.253,
+                6.374,
+                1.507
+              ],
+              "vel": [
+                0.122,
+                2.423,
+                0.018
+              ],
+              "speed": 2.426,
+              "clearance": 3.131,
+              "shield_state": "NOMINAL",
+              "policy_action": [
+                0.041,
+                0.808,
+                0.006,
+                0.001
+              ],
+              "executed_action": [
+                0.041,
+                0.808,
+                0.006,
+                0.001
+              ],
+              "intervened": false
+            },
+            {
+              "step": 289,
+              "pos": [
+                0.255,
+                6.472,
+                1.508
+              ],
+              "vel": [
+                0.039,
+                2.365,
+                0.02
+              ],
+              "speed": 2.365,
+              "clearance": 3.03,
+              "shield_state": "NOMINAL",
+              "policy_action": [
+                0.013,
+                0.788,
+                0.007,
+                0.004
+              ],
+              "executed_action": [
+                0.013,
+                0.788,
+                0.007,
+                0.004
+              ],
+              "intervened": false
+            },
+            {
+              "step": 290,
+              "pos": [
+                0.253,
+                6.571,
+                1.508
+              ],
+              "vel": [
+                -0.058,
+                2.359,
+                -0.006
+              ],
+              "speed": 2.36,
+              "clearance": 2.928,
+              "shield_state": "NOMINAL",
+              "policy_action": [
+                -0.019,
+                0.786,
+                -0.002,
+                -0.003
+              ],
+              "executed_action": [
+                -0.019,
+                0.786,
+                -0.002,
+                -0.003
+              ],
+              "intervened": false
+            },
+            {
+              "step": 291,
+              "pos": [
+                0.251,
+                6.669,
+                1.507
+              ],
+              "vel": [
+                -0.049,
+                2.363,
+                -0.008
+              ],
+              "speed": 2.364,
+              "clearance": 2.83,
+              "shield_state": "NOMINAL",
+              "policy_action": [
+                -0.016,
+                0.788,
+                -0.003,
+                0.003
+              ],
+              "executed_action": [
+                -0.016,
+                0.788,
+                -0.003,
+                0.003
+              ],
+              "intervened": false
+            },
+            {
+              "step": 292,
+              "pos": [
+                0.247,
+                6.769,
+                1.507
+              ],
+              "vel": [
+                -0.082,
+                2.41,
+                -0.012
+              ],
+              "speed": 2.411,
+              "clearance": 2.732,
+              "shield_state": "NOMINAL",
+              "policy_action": [
+                -0.027,
+                0.803,
+                -0.004,
+                0.003
+              ],
+              "executed_action": [
+                -0.027,
+                0.803,
+                -0.004,
+                0.003
+              ],
+              "intervened": false
+            },
+            {
+              "step": 293,
+              "pos": [
+                0.241,
+                6.874,
+                1.507
+              ],
+              "vel": [
+                -0.154,
+                2.497,
+                -0.002
+              ],
+              "speed": 2.502,
+              "clearance": 2.632,
+              "shield_state": "NOMINAL",
+              "policy_action": [
+                -0.051,
+                0.832,
+                -0.001,
+                0.005
+              ],
+              "executed_action": [
+                -0.051,
+                0.832,
+                -0.001,
+                0.005
+              ],
+              "intervened": false
+            },
+            {
+              "step": 294,
+              "pos": [
+                0.232,
+                6.98,
+                1.507
+              ],
+              "vel": [
+                -0.213,
+                2.56,
+                -0.003
+              ],
+              "speed": 2.569,
+              "clearance": 2.531,
+              "shield_state": "NOMINAL",
+              "policy_action": [
+                -0.071,
+                0.853,
+                -0.001,
+                0.005
+              ],
+              "executed_action": [
+                -0.071,
+                0.853,
+                -0.001,
+                0.005
+              ],
+              "intervened": false
+            },
+            {
+              "step": 295,
+              "pos": [
+                0.221,
+                7.089,
+                1.507
+              ],
+              "vel": [
+                -0.266,
+                2.601,
+                -0.003
+              ],
+              "speed": 2.614,
+              "clearance": 2.428,
+              "shield_state": "NOMINAL",
+              "policy_action": [
+                -0.089,
+                0.867,
+                -0.001,
+                0.006
+              ],
+              "executed_action": [
+                -0.089,
+                0.867,
+                -0.001,
+                0.006
+              ],
+              "intervened": false
+            },
+            {
+              "step": 296,
+              "pos": [
+                0.208,
+                7.198,
+                1.506
+              ],
+              "vel": [
+                -0.317,
+                2.625,
+                -0.004
+              ],
+              "speed": 2.644,
+              "clearance": 2.318,
+              "shield_state": "NOMINAL",
+              "policy_action": [
+                -0.106,
+                0.875,
+                -0.001,
+                0.006
+              ],
+              "executed_action": [
+                -0.106,
+                0.875,
+                -0.001,
+                0.006
+              ],
+              "intervened": false
+            },
+            {
+              "step": 297,
+              "pos": [
+                0.192,
+                7.308,
+                1.506
+              ],
+              "vel": [
+                -0.366,
+                2.638,
+                -0.004
+              ],
+              "speed": 2.663,
+              "clearance": 2.205,
+              "shield_state": "NOMINAL",
+              "policy_action": [
+                -0.122,
+                0.879,
+                -0.001,
+                0.006
+              ],
+              "executed_action": [
+                -0.122,
+                0.879,
+                -0.001,
+                0.006
+              ],
+              "intervened": false
+            }
+          ]
+        },
+        {
+          "seed": 2018,
+          "outcome": "SUCCESS",
+          "steps": 235,
+          "reward": -343.52,
+          "min_clearance": 0.11,
+          "interventions_count": 113,
+          "interventions_pct": 48.1,
+          "state_counts": {
+            "NOMINAL": 180,
+            "BRAKE": 9,
+            "SCAN": 9,
+            "REROUTE": 37,
+            "RETREAT": 0,
+            "DISABLED": 0
+          },
+          "stop_latency": 1,
+          "standoff_distance": 4.007,
+          "cause_of_failure": "N/A - Goal reached successfully.",
+          "last_10_steps": [
+            {
+              "step": 226,
+              "pos": [
+                -0.017,
+                6.296,
+                1.496
+              ],
+              "vel": [
+                0.198,
+                2.608,
+                -0.001
+              ],
+              "speed": 2.615,
+              "clearance": 3.224,
+              "shield_state": "NOMINAL",
+              "policy_action": [
+                0.066,
+                0.869,
+                -0.0,
+                -0.006
+              ],
+              "executed_action": [
+                0.066,
+                0.869,
+                -0.0,
+                -0.006
+              ],
+              "intervened": false
+            },
+            {
+              "step": 227,
+              "pos": [
+                -0.012,
+                6.4,
+                1.496
+              ],
+              "vel": [
+                0.126,
+                2.495,
+                -0.003
+              ],
+              "speed": 2.498,
+              "clearance": 3.113,
+              "shield_state": "NOMINAL",
+              "policy_action": [
+                0.042,
+                0.832,
+                -0.001,
+                -0.0
+              ],
+              "executed_action": [
+                0.042,
+                0.832,
+                -0.001,
+                -0.0
+              ],
+              "intervened": false
+            },
+            {
+              "step": 228,
+              "pos": [
+                -0.011,
+                6.505,
+                1.495
+              ],
+              "vel": [
+                0.034,
+                2.527,
+                -0.019
+              ],
+              "speed": 2.527,
+              "clearance": 3.004,
+              "shield_state": "NOMINAL",
+              "policy_action": [
+                0.011,
+                0.842,
+                -0.006,
+                -0.003
+              ],
+              "executed_action": [
+                0.011,
+                0.842,
+                -0.006,
+                -0.003
+              ],
+              "intervened": false
+            },
+            {
+              "step": 229,
+              "pos": [
+                -0.01,
+                6.608,
+                1.494
+              ],
+              "vel": [
+                0.014,
+                2.451,
+                -0.017
+              ],
+              "speed": 2.451,
+              "clearance": 2.895,
+              "shield_state": "NOMINAL",
+              "policy_action": [
+                0.005,
+                0.817,
+                -0.006,
+                0.001
+              ],
+              "executed_action": [
+                0.005,
+                0.817,
+                -0.006,
+                0.001
+              ],
+              "intervened": false
+            },
+            {
+              "step": 230,
+              "pos": [
+                -0.014,
+                6.711,
+                1.494
+              ],
+              "vel": [
+                -0.086,
+                2.475,
+                -0.014
+              ],
+              "speed": 2.477,
+              "clearance": 2.792,
+              "shield_state": "NOMINAL",
+              "policy_action": [
+                -0.029,
+                0.825,
+                -0.005,
+                0.002
+              ],
+              "executed_action": [
+                -0.029,
+                0.825,
+                -0.005,
+                0.002
+              ],
+              "intervened": false
+            },
+            {
+              "step": 231,
+              "pos": [
+                -0.018,
+                6.816,
+                1.493
+              ],
+              "vel": [
+                -0.11,
+                2.515,
+                -0.008
+              ],
+              "speed": 2.518,
+              "clearance": 2.691,
+              "shield_state": "NOMINAL",
+              "policy_action": [
+                -0.037,
+                0.838,
+                -0.003,
+                0.002
+              ],
+              "executed_action": [
+                -0.037,
+                0.838,
+                -0.003,
+                0.002
+              ],
+              "intervened": false
+            },
+            {
+              "step": 232,
+              "pos": [
+                -0.025,
+                6.923,
+                1.493
+              ],
+              "vel": [
+                -0.162,
+                2.575,
+                -0.003
+              ],
+              "speed": 2.58,
+              "clearance": 2.587,
+              "shield_state": "NOMINAL",
+              "policy_action": [
+                -0.054,
+                0.858,
+                -0.001,
+                0.006
+              ],
+              "executed_action": [
+                -0.054,
+                0.858,
+                -0.001,
+                0.006
+              ],
+              "intervened": false
+            },
+            {
+              "step": 233,
+              "pos": [
+                -0.034,
+                7.032,
+                1.493
+              ],
+              "vel": [
+                -0.208,
+                2.612,
+                -0.003
+              ],
+              "speed": 2.621,
+              "clearance": 2.482,
+              "shield_state": "NOMINAL",
+              "policy_action": [
+                -0.069,
+                0.871,
+                -0.001,
+                0.006
+              ],
+              "executed_action": [
+                -0.069,
+                0.871,
+                -0.001,
+                0.006
+              ],
+              "intervened": false
+            },
+            {
+              "step": 234,
+              "pos": [
+                -0.044,
+                7.141,
+                1.493
+              ],
+              "vel": [
+                -0.253,
+                2.634,
+                -0.003
+              ],
+              "speed": 2.646,
+              "clearance": 2.376,
+              "shield_state": "NOMINAL",
+              "policy_action": [
+                -0.084,
+                0.878,
+                -0.001,
+                0.006
+              ],
+              "executed_action": [
+                -0.084,
+                0.878,
+                -0.001,
+                0.006
+              ],
+              "intervened": false
+            },
+            {
+              "step": 235,
+              "pos": [
+                -0.056,
+                7.252,
+                1.493
+              ],
+              "vel": [
+                -0.296,
+                2.646,
+                -0.004
+              ],
+              "speed": 2.662,
+              "clearance": 2.266,
+              "shield_state": "NOMINAL",
+              "policy_action": [
+                -0.099,
+                0.882,
+                -0.001,
+                0.006
+              ],
+              "executed_action": [
+                -0.099,
+                0.882,
+                -0.001,
+                0.006
+              ],
+              "intervened": false
+            }
+          ]
+        },
+        {
+          "seed": 2021,
+          "outcome": "SUCCESS",
+          "steps": 246,
+          "reward": -142.26,
+          "min_clearance": 0.02,
+          "interventions_count": 133,
+          "interventions_pct": 54.1,
+          "state_counts": {
+            "NOMINAL": 195,
+            "BRAKE": 7,
+            "SCAN": 7,
+            "REROUTE": 37,
+            "RETREAT": 0,
+            "DISABLED": 0
+          },
+          "stop_latency": 1,
+          "standoff_distance": 0.79,
+          "cause_of_failure": "N/A - Goal reached successfully.",
+          "last_10_steps": [
+            {
+              "step": 237,
+              "pos": [
+                -1.308,
+                6.698,
+                1.495
+              ],
+              "vel": [
+                1.988,
+                2.246,
+                0.022
+              ],
+              "speed": 3.0,
+              "clearance": 2.831,
+              "shield_state": "NOMINAL",
+              "policy_action": [
+                0.665,
+                0.751,
+                0.007,
+                0.007
+              ],
+              "executed_action": [
+                0.663,
+                0.749,
+                0.007,
+                0.007
+              ],
+              "intervened": true
+            },
+            {
+              "step": 238,
+              "pos": [
+                -1.221,
+                6.787,
+                1.495
+              ],
+              "vel": [
+                2.089,
+                2.154,
+                0.009
+              ],
+              "speed": 3.0,
+              "clearance": 2.758,
+              "shield_state": "NOMINAL",
+              "policy_action": [
+                0.708,
+                0.73,
+                0.003,
+                -0.001
+              ],
+              "executed_action": [
+                0.696,
+                0.718,
+                0.003,
+                -0.001
+              ],
+              "intervened": true
+            },
+            {
+              "step": 239,
+              "pos": [
+                -1.134,
+                6.878,
+                1.496
+              ],
+              "vel": [
+                2.08,
+                2.162,
+                0.013
+              ],
+              "speed": 3.0,
+              "clearance": 2.694,
+              "shield_state": "NOMINAL",
+              "policy_action": [
+                0.699,
+                0.727,
+                0.004,
+                0.001
+              ],
+              "executed_action": [
+                0.693,
+                0.721,
+                0.004,
+                0.001
+              ],
+              "intervened": true
+            },
+            {
+              "step": 240,
+              "pos": [
+                -1.049,
+                6.966,
+                1.495
+              ],
+              "vel": [
+                2.04,
+                2.123,
+                -0.02
+              ],
+              "speed": 2.944,
+              "clearance": 2.598,
+              "shield_state": "NOMINAL",
+              "policy_action": [
+                0.68,
+                0.708,
+                -0.007,
+                0.006
+              ],
+              "executed_action": [
+                0.68,
+                0.708,
+                -0.007,
+                0.006
+              ],
+              "intervened": false
+            },
+            {
+              "step": 241,
+              "pos": [
+                -0.966,
+                7.053,
+                1.494
+              ],
+              "vel": [
+                1.992,
+                2.084,
+                -0.018
+              ],
+              "speed": 2.883,
+              "clearance": 2.507,
+              "shield_state": "NOMINAL",
+              "policy_action": [
+                0.664,
+                0.695,
+                -0.006,
+                0.006
+              ],
+              "executed_action": [
+                0.664,
+                0.695,
+                -0.006,
+                0.006
+              ],
+              "intervened": false
+            },
+            {
+              "step": 242,
+              "pos": [
+                -0.885,
+                7.138,
+                1.493
+              ],
+              "vel": [
+                1.945,
+                2.044,
+                -0.016
+              ],
+              "speed": 2.822,
+              "clearance": 2.416,
+              "shield_state": "NOMINAL",
+              "policy_action": [
+                0.648,
+                0.681,
+                -0.005,
+                0.006
+              ],
+              "executed_action": [
+                0.648,
+                0.681,
+                -0.005,
+                0.006
+              ],
+              "intervened": false
+            },
+            {
+              "step": 243,
+              "pos": [
+                -0.806,
+                7.221,
+                1.493
+              ],
+              "vel": [
+                1.901,
+                2.001,
+                -0.014
+              ],
+              "speed": 2.76,
+              "clearance": 2.327,
+              "shield_state": "NOMINAL",
+              "policy_action": [
+                0.634,
+                0.667,
+                -0.005,
+                0.006
+              ],
+              "executed_action": [
+                0.634,
+                0.667,
+                -0.005,
+                0.006
+              ],
+              "intervened": false
+            },
+            {
+              "step": 244,
+              "pos": [
+                -0.729,
+                7.303,
+                1.492
+              ],
+              "vel": [
+                1.852,
+                1.955,
+                -0.012
+              ],
+              "speed": 2.693,
+              "clearance": 2.241,
+              "shield_state": "NOMINAL",
+              "policy_action": [
+                0.617,
+                0.652,
+                -0.004,
+                0.006
+              ],
+              "executed_action": [
+                0.617,
+                0.652,
+                -0.004,
+                0.006
+              ],
+              "intervened": false
+            },
+            {
+              "step": 245,
+              "pos": [
+                -0.654,
+                7.382,
+                1.492
+              ],
+              "vel": [
+                1.8,
+                1.902,
+                -0.01
+              ],
+              "speed": 2.618,
+              "clearance": 2.156,
+              "shield_state": "NOMINAL",
+              "policy_action": [
+                0.6,
+                0.634,
+                -0.003,
+                0.006
+              ],
+              "executed_action": [
+                0.6,
+                0.634,
+                -0.003,
+                0.006
+              ],
+              "intervened": false
+            },
+            {
+              "step": 246,
+              "pos": [
+                -0.581,
+                7.459,
+                1.492
+              ],
+              "vel": [
+                1.74,
+                1.839,
+                -0.007
+              ],
+              "speed": 2.532,
+              "clearance": 2.075,
+              "shield_state": "NOMINAL",
+              "policy_action": [
+                0.58,
+                0.613,
+                -0.002,
+                0.006
+              ],
+              "executed_action": [
+                0.58,
+                0.613,
+                -0.002,
+                0.006
+              ],
+              "intervened": false
+            }
+          ]
+        },
+        {
+          "seed": 2022,
+          "outcome": "SUCCESS",
+          "steps": 376,
+          "reward": -933.13,
+          "min_clearance": 0.179,
+          "interventions_count": 208,
+          "interventions_pct": 55.3,
+          "state_counts": {
+            "NOMINAL": 242,
+            "BRAKE": 15,
+            "SCAN": 15,
+            "REROUTE": 104,
+            "RETREAT": 0,
+            "DISABLED": 0
+          },
+          "stop_latency": 1,
+          "standoff_distance": 1.125,
+          "cause_of_failure": "N/A - Goal reached successfully.",
+          "last_10_steps": [
+            {
+              "step": 367,
+              "pos": [
+                0.772,
+                6.542,
+                1.487
+              ],
+              "vel": [
+                -0.835,
+                2.381,
+                -0.0
+              ],
+              "speed": 2.523,
+              "clearance": 2.958,
+              "shield_state": "NOMINAL",
+              "policy_action": [
+                -0.278,
+                0.794,
+                -0.0,
+                -0.006
+              ],
+              "executed_action": [
+                -0.278,
+                0.794,
+                -0.0,
+                -0.006
+              ],
+              "intervened": false
+            },
+            {
+              "step": 368,
+              "pos": [
+                0.736,
+                6.638,
+                1.487
+              ],
+              "vel": [
+                -0.876,
+                2.29,
+                0.0
+              ],
+              "speed": 2.452,
+              "clearance": 2.858,
+              "shield_state": "NOMINAL",
+              "policy_action": [
+                -0.292,
+                0.763,
+                0.0,
+                0.003
+              ],
+              "executed_action": [
+                -0.292,
+                0.763,
+                0.0,
+                0.003
+              ],
+              "intervened": false
+            },
+            {
+              "step": 369,
+              "pos": [
+                0.694,
+                6.734,
+                1.487
+              ],
+              "vel": [
+                -1.009,
+                2.294,
+                -0.001
+              ],
+              "speed": 2.506,
+              "clearance": 2.762,
+              "shield_state": "NOMINAL",
+              "policy_action": [
+                -0.336,
+                0.765,
+                -0.0,
+                0.002
+              ],
+              "executed_action": [
+                -0.336,
+                0.765,
+                -0.0,
+                0.002
+              ],
+              "intervened": false
+            },
+            {
+              "step": 370,
+              "pos": [
+                0.66,
+                6.828,
+                1.486
+              ],
+              "vel": [
+                -0.816,
+                2.261,
+                -0.031
+              ],
+              "speed": 2.403,
+              "clearance": 2.672,
+              "shield_state": "NOMINAL",
+              "policy_action": [
+                -0.272,
+                0.754,
+                -0.01,
+                -0.0
+              ],
+              "executed_action": [
+                -0.272,
+                0.754,
+                -0.01,
+                -0.0
+              ],
+              "intervened": false
+            },
+            {
+              "step": 371,
+              "pos": [
+                0.626,
+                6.925,
+                1.486
+              ],
+              "vel": [
+                -0.814,
+                2.334,
+                -0.011
+              ],
+              "speed": 2.472,
+              "clearance": 2.572,
+              "shield_state": "NOMINAL",
+              "policy_action": [
+                -0.271,
+                0.778,
+                -0.004,
+                0.003
+              ],
+              "executed_action": [
+                -0.271,
+                0.778,
+                -0.004,
+                0.003
+              ],
+              "intervened": false
+            },
+            {
+              "step": 372,
+              "pos": [
+                0.592,
+                7.025,
+                1.485
+              ],
+              "vel": [
+                -0.809,
+                2.399,
+                -0.013
+              ],
+              "speed": 2.532,
+              "clearance": 2.475,
+              "shield_state": "NOMINAL",
+              "policy_action": [
+                -0.27,
+                0.8,
+                -0.004,
+                0.004
+              ],
+              "executed_action": [
+                -0.27,
+                0.8,
+                -0.004,
+                0.004
+              ],
+              "intervened": false
+            },
+            {
+              "step": 373,
+              "pos": [
+                0.558,
+                7.127,
+                1.484
+              ],
+              "vel": [
+                -0.813,
+                2.454,
+                -0.014
+              ],
+              "speed": 2.585,
+              "clearance": 2.376,
+              "shield_state": "NOMINAL",
+              "policy_action": [
+                -0.271,
+                0.818,
+                -0.005,
+                0.005
+              ],
+              "executed_action": [
+                -0.271,
+                0.818,
+                -0.005,
+                0.005
+              ],
+              "intervened": false
+            },
+            {
+              "step": 374,
+              "pos": [
+                0.524,
+                7.231,
+                1.484
+              ],
+              "vel": [
+                -0.821,
+                2.498,
+                -0.014
+              ],
+              "speed": 2.63,
+              "clearance": 2.274,
+              "shield_state": "NOMINAL",
+              "policy_action": [
+                -0.274,
+                0.833,
+                -0.005,
+                0.005
+              ],
+              "executed_action": [
+                -0.274,
+                0.833,
+                -0.005,
+                0.005
+              ],
+              "intervened": false
+            },
+            {
+              "step": 375,
+              "pos": [
+                0.489,
+                7.337,
+                1.483
+              ],
+              "vel": [
+                -0.831,
+                2.531,
+                -0.014
+              ],
+              "speed": 2.664,
+              "clearance": 2.17,
+              "shield_state": "NOMINAL",
+              "policy_action": [
+                -0.277,
+                0.844,
+                -0.005,
+                0.006
+              ],
+              "executed_action": [
+                -0.277,
+                0.844,
+                -0.005,
+                0.006
+              ],
+              "intervened": false
+            },
+            {
+              "step": 376,
+              "pos": [
+                0.454,
+                7.443,
+                1.483
+              ],
+              "vel": [
+                -0.842,
+                2.553,
+                -0.014
+              ],
+              "speed": 2.689,
+              "clearance": 2.064,
+              "shield_state": "NOMINAL",
+              "policy_action": [
+                -0.281,
+                0.851,
+                -0.005,
+                0.006
+              ],
+              "executed_action": [
+                -0.281,
+                0.851,
+                -0.005,
+                0.006
+              ],
+              "intervened": false
+            }
+          ]
+        }
+      ]
+    }
+  },
+  "comparisons": {},
+  "crash_forensics": [
+    {
+      "config_name": "Shield ON (oracle)",
+      "seed": 2011,
+      "outcome": "TIMEOUT",
+      "steps": 500,
+      "reward": -2586.24,
+      "min_clearance": 0.201,
+      "cause_of_failure": "Exceeded maximum episode limit (500 steps) without reaching goal.",
+      "last_10_steps": [
+        {
+          "step": 491,
+          "pos": [
+            1.942,
+            -0.885,
+            1.501
+          ],
+          "vel": [
+            0.0,
+            -0.8,
+            -0.002
+          ],
+          "speed": 0.8,
+          "clearance": 4.916,
+          "shield_state": "RETREAT",
+          "policy_action": [
+            -0.139,
+            0.964,
+            0.014,
+            0.019
+          ],
+          "executed_action": [
+            0.0,
+            -0.267,
+            -0.001,
+            0.0
+          ],
+          "intervened": true
+        },
+        {
+          "step": 492,
+          "pos": [
+            1.942,
+            -0.918,
+            1.501
+          ],
+          "vel": [
+            0.0,
+            -0.8,
+            -0.002
+          ],
+          "speed": 0.8,
+          "clearance": 4.916,
+          "shield_state": "RETREAT",
+          "policy_action": [
+            0.057,
+            0.953,
+            0.016,
+            0.007
+          ],
+          "executed_action": [
+            0.0,
+            -0.267,
+            -0.001,
+            0.0
+          ],
+          "intervened": true
+        },
+        {
+          "step": 493,
+          "pos": [
+            1.942,
+            -0.951,
+            1.501
+          ],
+          "vel": [
+            0.0,
+            -0.8,
+            -0.002
+          ],
+          "speed": 0.8,
+          "clearance": 4.916,
+          "shield_state": "RETREAT",
+          "policy_action": [
+            -0.209,
+            0.965,
+            0.017,
+            0.023
+          ],
+          "executed_action": [
+            0.0,
+            -0.267,
+            -0.001,
+            0.0
+          ],
+          "intervened": true
+        },
+        {
+          "step": 494,
+          "pos": [
+            1.942,
+            -0.985,
+            1.501
+          ],
+          "vel": [
+            0.0,
+            -0.8,
+            -0.002
+          ],
+          "speed": 0.8,
+          "clearance": 4.916,
+          "shield_state": "SCAN",
+          "policy_action": [
+            -0.304,
+            0.968,
+            0.017,
+            0.03
+          ],
+          "executed_action": [
+            0.0,
+            -0.267,
+            -0.001,
+            0.0
+          ],
+          "intervened": true
+        },
+        {
+          "step": 495,
+          "pos": [
+            2.0,
+            -0.985,
+            1.501
+          ],
+          "vel": [
+            1.4,
+            0.0,
+            -0.002
+          ],
+          "speed": 1.4,
+          "clearance": 4.916,
+          "shield_state": "REROUTE",
+          "policy_action": [
+            0.44,
+            0.924,
+            0.042,
+            0.001
+          ],
+          "executed_action": [
+            0.467,
+            0.0,
+            -0.001,
+            0.0
+          ],
+          "intervened": true
+        },
+        {
+          "step": 496,
+          "pos": [
+            2.058,
+            -0.918,
+            1.501
+          ],
+          "vel": [
+            1.4,
+            1.6,
+            -0.002
+          ],
+          "speed": 2.126,
+          "clearance": 0.584,
+          "shield_state": "REROUTE",
+          "policy_action": [
+            -0.407,
+            0.778,
+            -0.04,
+            -0.017
+          ],
+          "executed_action": [
+            0.467,
+            0.533,
+            -0.001,
+            0.0
+          ],
+          "intervened": true
+        },
+        {
+          "step": 497,
+          "pos": [
+            2.07,
+            -0.899,
+            1.501
+          ],
+          "vel": [
+            0.266,
+            0.455,
+            -0.001
+          ],
+          "speed": 0.527,
+          "clearance": 0.496,
+          "shield_state": "NOMINAL",
+          "policy_action": [
+            0.298,
+            0.509,
+            -0.0,
+            -0.008
+          ],
+          "executed_action": [
+            0.089,
+            0.152,
+            -0.0,
+            -0.008
+          ],
+          "intervened": true
+        },
+        {
+          "step": 498,
+          "pos": [
+            2.071,
+            -0.883,
+            1.501
+          ],
+          "vel": [
+            0.042,
+            0.392,
+            0.017
+          ],
+          "speed": 0.395,
+          "clearance": 0.476,
+          "shield_state": "NOMINAL",
+          "policy_action": [
+            0.076,
+            0.708,
+            0.006,
+            0.004
+          ],
+          "executed_action": [
+            0.014,
+            0.131,
+            0.006,
+            0.004
+          ],
+          "intervened": true
+        },
+        {
+          "step": 499,
+          "pos": [
+            2.078,
+            -0.873,
+            1.504
+          ],
+          "vel": [
+            0.171,
+            0.241,
+            0.066
+          ],
+          "speed": 0.296,
+          "clearance": 0.465,
+          "shield_state": "NOMINAL",
+          "policy_action": [
+            0.454,
+            0.64,
+            0.022,
+            0.002
+          ],
+          "executed_action": [
+            0.057,
+            0.08,
+            0.022,
+            0.002
+          ],
+          "intervened": true
+        },
+        {
+          "step": 500,
+          "pos": [
+            2.082,
+            -0.869,
+            1.505
+          ],
+          "vel": [
+            0.076,
+            0.086,
+            0.015
+          ],
+          "speed": 0.115,
+          "clearance": 0.452,
+          "shield_state": "NOMINAL",
+          "policy_action": [
+            0.671,
+            0.759,
+            0.005,
+            -0.012
+          ],
+          "executed_action": [
+            0.025,
+            0.029,
+            0.005,
+            -0.012
+          ],
+          "intervened": true
+        }
+      ]
+    }
+  ]
+}

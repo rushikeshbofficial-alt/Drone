@@ -253,6 +253,9 @@ def evaluate_policy(args):
     while seed_idx < len(eval_seeds):
         seed = eval_seeds[seed_idx]
         env = IndoorDroneNavEnv(gui=False, seed=seed, max_steps=args.max_steps)
+        if getattr(args, "shield", False):
+            from drone_shield import StopAndRerouteShield
+            env = StopAndRerouteShield(env, sensor_mode=args.shield_mode, enabled=True)
         obs, info = env.reset(seed=seed)
         if tactical_renderer is not None:
             tactical_renderer.reset_episode(ep_idx=seed_idx + 1, start_pos=env.start_pos, seed=seed)
@@ -442,6 +445,11 @@ if __name__ == "__main__":
                         choices=["training", "unseen", "all"],
                         help="Which seeds to evaluate on: 'training' (same as training), "
                              "'unseen' (new layouts), 'all' (both)")
+    parser.add_argument("--shield",     action="store_true", default=False,
+                        help="Enable Stop, Hover & Re-Route (SHR) safety shield")
+    parser.add_argument("--shield-mode", type=str, default="oracle",
+                        choices=["oracle", "camera"],
+                        help="Safety shield sensor mode: 'oracle' or 'camera' (default: 'oracle')")
 
     args = parser.parse_args()
     evaluate_policy(args)
