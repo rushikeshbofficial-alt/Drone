@@ -1,0 +1,1685 @@
+{
+  "v1_baseline": {
+    "config_name": "SHR v1 (All 5 Fixes OFF)",
+    "shield_kwargs": {
+      "shield_version": "v1",
+      "anti_amnesia": false,
+      "forward_creep": false,
+      "guided_bypass": false,
+      "goal_proximity": false,
+      "oracle_planner": false
+    },
+    "success_count": 0,
+    "timeout_count": 15,
+    "collision_count": 0,
+    "planner_count": 0,
+    "resolved_count": 0,
+    "episodes": [
+      {
+        "seed": 4000,
+        "outcome": "TIMEOUT",
+        "steps": 500,
+        "planner_invoked": false,
+        "planner_steps": 0,
+        "reward": -2412.99,
+        "min_clearance": 0.202
+      },
+      {
+        "seed": 4015,
+        "outcome": "TIMEOUT",
+        "steps": 500,
+        "planner_invoked": false,
+        "planner_steps": 0,
+        "reward": -2477.91,
+        "min_clearance": 0.327
+      },
+      {
+        "seed": 4018,
+        "outcome": "TIMEOUT",
+        "steps": 500,
+        "planner_invoked": false,
+        "planner_steps": 0,
+        "reward": -2371.49,
+        "min_clearance": 0.414
+      },
+      {
+        "seed": 4020,
+        "outcome": "TIMEOUT",
+        "steps": 500,
+        "planner_invoked": false,
+        "planner_steps": 0,
+        "reward": -1208.72,
+        "min_clearance": 0.195
+      },
+      {
+        "seed": 4021,
+        "outcome": "TIMEOUT",
+        "steps": 500,
+        "planner_invoked": false,
+        "planner_steps": 0,
+        "reward": -2462.89,
+        "min_clearance": 0.177
+      },
+      {
+        "seed": 4023,
+        "outcome": "TIMEOUT",
+        "steps": 500,
+        "planner_invoked": false,
+        "planner_steps": 0,
+        "reward": -995.01,
+        "min_clearance": 0.25
+      },
+      {
+        "seed": 4024,
+        "outcome": "TIMEOUT",
+        "steps": 500,
+        "planner_invoked": false,
+        "planner_steps": 0,
+        "reward": -218.6,
+        "min_clearance": 0.309
+      },
+      {
+        "seed": 4026,
+        "outcome": "TIMEOUT",
+        "steps": 500,
+        "planner_invoked": false,
+        "planner_steps": 0,
+        "reward": -1459.81,
+        "min_clearance": 0.392
+      },
+      {
+        "seed": 4036,
+        "outcome": "TIMEOUT",
+        "steps": 500,
+        "planner_invoked": false,
+        "planner_steps": 0,
+        "reward": -1324.44,
+        "min_clearance": 0.075
+      },
+      {
+        "seed": 4048,
+        "outcome": "TIMEOUT",
+        "steps": 500,
+        "planner_invoked": false,
+        "planner_steps": 0,
+        "reward": -1546.21,
+        "min_clearance": 0.075
+      },
+      {
+        "seed": 4049,
+        "outcome": "TIMEOUT",
+        "steps": 500,
+        "planner_invoked": false,
+        "planner_steps": 0,
+        "reward": -2599.55,
+        "min_clearance": 0.056
+      },
+      {
+        "seed": 4052,
+        "outcome": "TIMEOUT",
+        "steps": 500,
+        "planner_invoked": false,
+        "planner_steps": 0,
+        "reward": -887.96,
+        "min_clearance": 0.121
+      },
+      {
+        "seed": 4053,
+        "outcome": "TIMEOUT",
+        "steps": 500,
+        "planner_invoked": false,
+        "planner_steps": 0,
+        "reward": -2420.6,
+        "min_clearance": 0.117
+      },
+      {
+        "seed": 4055,
+        "outcome": "TIMEOUT",
+        "steps": 500,
+        "planner_invoked": false,
+        "planner_steps": 0,
+        "reward": -2317.92,
+        "min_clearance": 0.387
+      },
+      {
+        "seed": 4056,
+        "outcome": "TIMEOUT",
+        "steps": 500,
+        "planner_invoked": false,
+        "planner_steps": 0,
+        "reward": -3264.63,
+        "min_clearance": 0.187
+      }
+    ]
+  },
+  "alone_anti_amnesia": {
+    "config_name": "Alone: Fix 1 (anti_amnesia)",
+    "shield_kwargs": {
+      "shield_version": "v1",
+      "anti_amnesia": true,
+      "forward_creep": false,
+      "guided_bypass": false,
+      "goal_proximity": false,
+      "oracle_planner": false
+    },
+    "success_count": 1,
+    "timeout_count": 14,
+    "collision_count": 0,
+    "planner_count": 0,
+    "resolved_count": 1,
+    "episodes": [
+      {
+        "seed": 4000,
+        "outcome": "TIMEOUT",
+        "steps": 500,
+        "planner_invoked": false,
+        "planner_steps": 0,
+        "reward": -2388.33,
+        "min_clearance": 0.202
+      },
+      {
+        "seed": 4015,
+        "outcome": "TIMEOUT",
+        "steps": 500,
+        "planner_invoked": false,
+        "planner_steps": 0,
+        "reward": -2476.31,
+        "min_clearance": 0.327
+      },
+      {
+        "seed": 4018,
+        "outcome": "TIMEOUT",
+        "steps": 500,
+        "planner_invoked": false,
+        "planner_steps": 0,
+        "reward": -2371.49,
+        "min_clearance": 0.414
+      },
+      {
+        "seed": 4020,
+        "outcome": "TIMEOUT",
+        "steps": 500,
+        "planner_invoked": false,
+        "planner_steps": 0,
+        "reward": -1205.56,
+        "min_clearance": 0.195
+      },
+      {
+        "seed": 4021,
+        "outcome": "TIMEOUT",
+        "steps": 500,
+        "planner_invoked": false,
+        "planner_steps": 0,
+        "reward": -2244.55,
+        "min_clearance": 0.102
+      },
+      {
+        "seed": 4023,
+        "outcome": "TIMEOUT",
+        "steps": 500,
+        "planner_invoked": false,
+        "planner_steps": 0,
+        "reward": -1611.69,
+        "min_clearance": 0.151
+      },
+      {
+        "seed": 4024,
+        "outcome": "TIMEOUT",
+        "steps": 500,
+        "planner_invoked": false,
+        "planner_steps": 0,
+        "reward": -215.71,
+        "min_clearance": 0.309
+      },
+      {
+        "seed": 4026,
+        "outcome": "TIMEOUT",
+        "steps": 500,
+        "planner_invoked": false,
+        "planner_steps": 0,
+        "reward": -1459.81,
+        "min_clearance": 0.392
+      },
+      {
+        "seed": 4036,
+        "outcome": "TIMEOUT",
+        "steps": 500,
+        "planner_invoked": false,
+        "planner_steps": 0,
+        "reward": -1352.64,
+        "min_clearance": 0.067
+      },
+      {
+        "seed": 4048,
+        "outcome": "TIMEOUT",
+        "steps": 500,
+        "planner_invoked": false,
+        "planner_steps": 0,
+        "reward": -1547.64,
+        "min_clearance": 0.075
+      },
+      {
+        "seed": 4049,
+        "outcome": "SUCCESS",
+        "steps": 231,
+        "planner_invoked": false,
+        "planner_steps": 0,
+        "reward": -162.81,
+        "min_clearance": 0.142
+      },
+      {
+        "seed": 4052,
+        "outcome": "TIMEOUT",
+        "steps": 500,
+        "planner_invoked": false,
+        "planner_steps": 0,
+        "reward": -583.86,
+        "min_clearance": 0.254
+      },
+      {
+        "seed": 4053,
+        "outcome": "TIMEOUT",
+        "steps": 500,
+        "planner_invoked": false,
+        "planner_steps": 0,
+        "reward": -2388.66,
+        "min_clearance": 0.117
+      },
+      {
+        "seed": 4055,
+        "outcome": "TIMEOUT",
+        "steps": 500,
+        "planner_invoked": false,
+        "planner_steps": 0,
+        "reward": -2288.31,
+        "min_clearance": 0.404
+      },
+      {
+        "seed": 4056,
+        "outcome": "TIMEOUT",
+        "steps": 500,
+        "planner_invoked": false,
+        "planner_steps": 0,
+        "reward": -3358.64,
+        "min_clearance": 0.187
+      }
+    ]
+  },
+  "alone_forward_creep": {
+    "config_name": "Alone: Fix 2 (forward_creep)",
+    "shield_kwargs": {
+      "shield_version": "v1",
+      "anti_amnesia": false,
+      "forward_creep": true,
+      "guided_bypass": false,
+      "goal_proximity": false,
+      "oracle_planner": false
+    },
+    "success_count": 2,
+    "timeout_count": 13,
+    "collision_count": 0,
+    "planner_count": 0,
+    "resolved_count": 2,
+    "episodes": [
+      {
+        "seed": 4000,
+        "outcome": "TIMEOUT",
+        "steps": 500,
+        "planner_invoked": false,
+        "planner_steps": 0,
+        "reward": -2427.42,
+        "min_clearance": 0.202
+      },
+      {
+        "seed": 4015,
+        "outcome": "TIMEOUT",
+        "steps": 500,
+        "planner_invoked": false,
+        "planner_steps": 0,
+        "reward": -2443.9,
+        "min_clearance": 0.272
+      },
+      {
+        "seed": 4018,
+        "outcome": "TIMEOUT",
+        "steps": 500,
+        "planner_invoked": false,
+        "planner_steps": 0,
+        "reward": -2379.77,
+        "min_clearance": 0.219
+      },
+      {
+        "seed": 4020,
+        "outcome": "SUCCESS",
+        "steps": 246,
+        "planner_invoked": false,
+        "planner_steps": 0,
+        "reward": -247.72,
+        "min_clearance": 0.211
+      },
+      {
+        "seed": 4021,
+        "outcome": "TIMEOUT",
+        "steps": 500,
+        "planner_invoked": false,
+        "planner_steps": 0,
+        "reward": -2509.81,
+        "min_clearance": 0.068
+      },
+      {
+        "seed": 4023,
+        "outcome": "TIMEOUT",
+        "steps": 500,
+        "planner_invoked": false,
+        "planner_steps": 0,
+        "reward": -995.01,
+        "min_clearance": 0.25
+      },
+      {
+        "seed": 4024,
+        "outcome": "TIMEOUT",
+        "steps": 500,
+        "planner_invoked": false,
+        "planner_steps": 0,
+        "reward": -218.6,
+        "min_clearance": 0.309
+      },
+      {
+        "seed": 4026,
+        "outcome": "TIMEOUT",
+        "steps": 500,
+        "planner_invoked": false,
+        "planner_steps": 0,
+        "reward": -1392.08,
+        "min_clearance": 0.206
+      },
+      {
+        "seed": 4036,
+        "outcome": "TIMEOUT",
+        "steps": 500,
+        "planner_invoked": false,
+        "planner_steps": 0,
+        "reward": -1343.22,
+        "min_clearance": 0.097
+      },
+      {
+        "seed": 4048,
+        "outcome": "TIMEOUT",
+        "steps": 500,
+        "planner_invoked": false,
+        "planner_steps": 0,
+        "reward": -1534.19,
+        "min_clearance": 0.11
+      },
+      {
+        "seed": 4049,
+        "outcome": "SUCCESS",
+        "steps": 258,
+        "planner_invoked": false,
+        "planner_steps": 0,
+        "reward": -224.69,
+        "min_clearance": 0.229
+      },
+      {
+        "seed": 4052,
+        "outcome": "TIMEOUT",
+        "steps": 500,
+        "planner_invoked": false,
+        "planner_steps": 0,
+        "reward": -789.09,
+        "min_clearance": 0.131
+      },
+      {
+        "seed": 4053,
+        "outcome": "TIMEOUT",
+        "steps": 500,
+        "planner_invoked": false,
+        "planner_steps": 0,
+        "reward": -2440.67,
+        "min_clearance": 0.148
+      },
+      {
+        "seed": 4055,
+        "outcome": "TIMEOUT",
+        "steps": 500,
+        "planner_invoked": false,
+        "planner_steps": 0,
+        "reward": -2317.92,
+        "min_clearance": 0.387
+      },
+      {
+        "seed": 4056,
+        "outcome": "TIMEOUT",
+        "steps": 500,
+        "planner_invoked": false,
+        "planner_steps": 0,
+        "reward": -3341.21,
+        "min_clearance": 0.143
+      }
+    ]
+  },
+  "alone_guided_bypass": {
+    "config_name": "Alone: Fix 3 (guided_bypass)",
+    "shield_kwargs": {
+      "shield_version": "v1",
+      "anti_amnesia": false,
+      "forward_creep": false,
+      "guided_bypass": true,
+      "goal_proximity": false,
+      "oracle_planner": false
+    },
+    "success_count": 1,
+    "timeout_count": 14,
+    "collision_count": 0,
+    "planner_count": 0,
+    "resolved_count": 1,
+    "episodes": [
+      {
+        "seed": 4000,
+        "outcome": "TIMEOUT",
+        "steps": 500,
+        "planner_invoked": false,
+        "planner_steps": 0,
+        "reward": -2632.36,
+        "min_clearance": 0.202
+      },
+      {
+        "seed": 4015,
+        "outcome": "TIMEOUT",
+        "steps": 500,
+        "planner_invoked": false,
+        "planner_steps": 0,
+        "reward": -2469.02,
+        "min_clearance": 0.314
+      },
+      {
+        "seed": 4018,
+        "outcome": "TIMEOUT",
+        "steps": 500,
+        "planner_invoked": false,
+        "planner_steps": 0,
+        "reward": -2379.77,
+        "min_clearance": 0.219
+      },
+      {
+        "seed": 4020,
+        "outcome": "TIMEOUT",
+        "steps": 500,
+        "planner_invoked": false,
+        "planner_steps": 0,
+        "reward": -2424.93,
+        "min_clearance": 0.16
+      },
+      {
+        "seed": 4021,
+        "outcome": "TIMEOUT",
+        "steps": 500,
+        "planner_invoked": false,
+        "planner_steps": 0,
+        "reward": -2721.59,
+        "min_clearance": 0.083
+      },
+      {
+        "seed": 4023,
+        "outcome": "TIMEOUT",
+        "steps": 500,
+        "planner_invoked": false,
+        "planner_steps": 0,
+        "reward": -1304.64,
+        "min_clearance": 0.217
+      },
+      {
+        "seed": 4024,
+        "outcome": "TIMEOUT",
+        "steps": 500,
+        "planner_invoked": false,
+        "planner_steps": 0,
+        "reward": -186.63,
+        "min_clearance": 0.309
+      },
+      {
+        "seed": 4026,
+        "outcome": "TIMEOUT",
+        "steps": 500,
+        "planner_invoked": false,
+        "planner_steps": 0,
+        "reward": -1392.08,
+        "min_clearance": 0.206
+      },
+      {
+        "seed": 4036,
+        "outcome": "TIMEOUT",
+        "steps": 500,
+        "planner_invoked": false,
+        "planner_steps": 0,
+        "reward": -1246.79,
+        "min_clearance": 0.131
+      },
+      {
+        "seed": 4048,
+        "outcome": "TIMEOUT",
+        "steps": 500,
+        "planner_invoked": false,
+        "planner_steps": 0,
+        "reward": -1575.22,
+        "min_clearance": 0.098
+      },
+      {
+        "seed": 4049,
+        "outcome": "SUCCESS",
+        "steps": 244,
+        "planner_invoked": false,
+        "planner_steps": 0,
+        "reward": -135.7,
+        "min_clearance": 0.229
+      },
+      {
+        "seed": 4052,
+        "outcome": "TIMEOUT",
+        "steps": 500,
+        "planner_invoked": false,
+        "planner_steps": 0,
+        "reward": -621.25,
+        "min_clearance": 0.213
+      },
+      {
+        "seed": 4053,
+        "outcome": "TIMEOUT",
+        "steps": 500,
+        "planner_invoked": false,
+        "planner_steps": 0,
+        "reward": -2559.58,
+        "min_clearance": 0.201
+      },
+      {
+        "seed": 4055,
+        "outcome": "TIMEOUT",
+        "steps": 500,
+        "planner_invoked": false,
+        "planner_steps": 0,
+        "reward": -2347.02,
+        "min_clearance": 0.309
+      },
+      {
+        "seed": 4056,
+        "outcome": "TIMEOUT",
+        "steps": 500,
+        "planner_invoked": false,
+        "planner_steps": 0,
+        "reward": -3391.54,
+        "min_clearance": 0.232
+      }
+    ]
+  },
+  "alone_goal_proximity": {
+    "config_name": "Alone: Fix 4 (goal_proximity)",
+    "shield_kwargs": {
+      "shield_version": "v1",
+      "anti_amnesia": false,
+      "forward_creep": false,
+      "guided_bypass": false,
+      "goal_proximity": true,
+      "oracle_planner": false
+    },
+    "success_count": 0,
+    "timeout_count": 15,
+    "collision_count": 0,
+    "planner_count": 0,
+    "resolved_count": 0,
+    "episodes": [
+      {
+        "seed": 4000,
+        "outcome": "TIMEOUT",
+        "steps": 500,
+        "planner_invoked": false,
+        "planner_steps": 0,
+        "reward": -2412.99,
+        "min_clearance": 0.202
+      },
+      {
+        "seed": 4015,
+        "outcome": "TIMEOUT",
+        "steps": 500,
+        "planner_invoked": false,
+        "planner_steps": 0,
+        "reward": -2477.91,
+        "min_clearance": 0.327
+      },
+      {
+        "seed": 4018,
+        "outcome": "TIMEOUT",
+        "steps": 500,
+        "planner_invoked": false,
+        "planner_steps": 0,
+        "reward": -2371.49,
+        "min_clearance": 0.414
+      },
+      {
+        "seed": 4020,
+        "outcome": "TIMEOUT",
+        "steps": 500,
+        "planner_invoked": false,
+        "planner_steps": 0,
+        "reward": -1208.72,
+        "min_clearance": 0.195
+      },
+      {
+        "seed": 4021,
+        "outcome": "TIMEOUT",
+        "steps": 500,
+        "planner_invoked": false,
+        "planner_steps": 0,
+        "reward": -2462.89,
+        "min_clearance": 0.177
+      },
+      {
+        "seed": 4023,
+        "outcome": "TIMEOUT",
+        "steps": 500,
+        "planner_invoked": false,
+        "planner_steps": 0,
+        "reward": -995.01,
+        "min_clearance": 0.25
+      },
+      {
+        "seed": 4024,
+        "outcome": "TIMEOUT",
+        "steps": 500,
+        "planner_invoked": false,
+        "planner_steps": 0,
+        "reward": -218.6,
+        "min_clearance": 0.309
+      },
+      {
+        "seed": 4026,
+        "outcome": "TIMEOUT",
+        "steps": 500,
+        "planner_invoked": false,
+        "planner_steps": 0,
+        "reward": -1459.81,
+        "min_clearance": 0.392
+      },
+      {
+        "seed": 4036,
+        "outcome": "TIMEOUT",
+        "steps": 500,
+        "planner_invoked": false,
+        "planner_steps": 0,
+        "reward": -1324.44,
+        "min_clearance": 0.075
+      },
+      {
+        "seed": 4048,
+        "outcome": "TIMEOUT",
+        "steps": 500,
+        "planner_invoked": false,
+        "planner_steps": 0,
+        "reward": -1546.21,
+        "min_clearance": 0.075
+      },
+      {
+        "seed": 4049,
+        "outcome": "TIMEOUT",
+        "steps": 500,
+        "planner_invoked": false,
+        "planner_steps": 0,
+        "reward": -2599.55,
+        "min_clearance": 0.056
+      },
+      {
+        "seed": 4052,
+        "outcome": "TIMEOUT",
+        "steps": 500,
+        "planner_invoked": false,
+        "planner_steps": 0,
+        "reward": -887.96,
+        "min_clearance": 0.121
+      },
+      {
+        "seed": 4053,
+        "outcome": "TIMEOUT",
+        "steps": 500,
+        "planner_invoked": false,
+        "planner_steps": 0,
+        "reward": -2420.6,
+        "min_clearance": 0.117
+      },
+      {
+        "seed": 4055,
+        "outcome": "TIMEOUT",
+        "steps": 500,
+        "planner_invoked": false,
+        "planner_steps": 0,
+        "reward": -2317.92,
+        "min_clearance": 0.387
+      },
+      {
+        "seed": 4056,
+        "outcome": "TIMEOUT",
+        "steps": 500,
+        "planner_invoked": false,
+        "planner_steps": 0,
+        "reward": -3264.63,
+        "min_clearance": 0.187
+      }
+    ]
+  },
+  "alone_oracle_planner": {
+    "config_name": "Alone: Fix 5 (oracle_planner)",
+    "shield_kwargs": {
+      "shield_version": "v1",
+      "anti_amnesia": false,
+      "forward_creep": false,
+      "guided_bypass": false,
+      "goal_proximity": false,
+      "oracle_planner": true
+    },
+    "success_count": 14,
+    "timeout_count": 1,
+    "collision_count": 0,
+    "planner_count": 15,
+    "resolved_count": 14,
+    "episodes": [
+      {
+        "seed": 4000,
+        "outcome": "TIMEOUT",
+        "steps": 500,
+        "planner_invoked": true,
+        "planner_steps": 149,
+        "reward": -1883.85,
+        "min_clearance": 0.16
+      },
+      {
+        "seed": 4015,
+        "outcome": "SUCCESS",
+        "steps": 208,
+        "planner_invoked": true,
+        "planner_steps": 45,
+        "reward": -175.56,
+        "min_clearance": 0.278
+      },
+      {
+        "seed": 4018,
+        "outcome": "SUCCESS",
+        "steps": 317,
+        "planner_invoked": true,
+        "planner_steps": 108,
+        "reward": -760.02,
+        "min_clearance": 0.157
+      },
+      {
+        "seed": 4020,
+        "outcome": "SUCCESS",
+        "steps": 344,
+        "planner_invoked": true,
+        "planner_steps": 50,
+        "reward": -474.7,
+        "min_clearance": 0.244
+      },
+      {
+        "seed": 4021,
+        "outcome": "SUCCESS",
+        "steps": 332,
+        "planner_invoked": true,
+        "planner_steps": 46,
+        "reward": -649.14,
+        "min_clearance": 0.198
+      },
+      {
+        "seed": 4023,
+        "outcome": "SUCCESS",
+        "steps": 239,
+        "planner_invoked": true,
+        "planner_steps": 45,
+        "reward": -78.59,
+        "min_clearance": 0.222
+      },
+      {
+        "seed": 4024,
+        "outcome": "SUCCESS",
+        "steps": 283,
+        "planner_invoked": true,
+        "planner_steps": 65,
+        "reward": -261.38,
+        "min_clearance": 0.079
+      },
+      {
+        "seed": 4026,
+        "outcome": "SUCCESS",
+        "steps": 361,
+        "planner_invoked": true,
+        "planner_steps": 93,
+        "reward": -317.61,
+        "min_clearance": 0.114
+      },
+      {
+        "seed": 4036,
+        "outcome": "SUCCESS",
+        "steps": 493,
+        "planner_invoked": true,
+        "planner_steps": 178,
+        "reward": -802.71,
+        "min_clearance": 0.075
+      },
+      {
+        "seed": 4048,
+        "outcome": "SUCCESS",
+        "steps": 273,
+        "planner_invoked": true,
+        "planner_steps": 45,
+        "reward": -259.57,
+        "min_clearance": 0.163
+      },
+      {
+        "seed": 4049,
+        "outcome": "SUCCESS",
+        "steps": 300,
+        "planner_invoked": true,
+        "planner_steps": 46,
+        "reward": -404.72,
+        "min_clearance": 0.142
+      },
+      {
+        "seed": 4052,
+        "outcome": "SUCCESS",
+        "steps": 405,
+        "planner_invoked": true,
+        "planner_steps": 105,
+        "reward": -649.43,
+        "min_clearance": 0.08
+      },
+      {
+        "seed": 4053,
+        "outcome": "SUCCESS",
+        "steps": 397,
+        "planner_invoked": true,
+        "planner_steps": 159,
+        "reward": -1218.05,
+        "min_clearance": 0.102
+      },
+      {
+        "seed": 4055,
+        "outcome": "SUCCESS",
+        "steps": 222,
+        "planner_invoked": true,
+        "planner_steps": 45,
+        "reward": -222.51,
+        "min_clearance": 0.396
+      },
+      {
+        "seed": 4056,
+        "outcome": "SUCCESS",
+        "steps": 373,
+        "planner_invoked": true,
+        "planner_steps": 111,
+        "reward": -1053.32,
+        "min_clearance": 0.168
+      }
+    ]
+  },
+  "cumul_1_anti_amnesia": {
+    "config_name": "Cumulative 1: +anti_amnesia",
+    "shield_kwargs": {
+      "shield_version": "v1",
+      "anti_amnesia": true,
+      "forward_creep": false,
+      "guided_bypass": false,
+      "goal_proximity": false,
+      "oracle_planner": false
+    },
+    "success_count": 1,
+    "timeout_count": 14,
+    "collision_count": 0,
+    "planner_count": 0,
+    "resolved_count": 1,
+    "episodes": [
+      {
+        "seed": 4000,
+        "outcome": "TIMEOUT",
+        "steps": 500,
+        "planner_invoked": false,
+        "planner_steps": 0,
+        "reward": -2388.33,
+        "min_clearance": 0.202
+      },
+      {
+        "seed": 4015,
+        "outcome": "TIMEOUT",
+        "steps": 500,
+        "planner_invoked": false,
+        "planner_steps": 0,
+        "reward": -2476.31,
+        "min_clearance": 0.327
+      },
+      {
+        "seed": 4018,
+        "outcome": "TIMEOUT",
+        "steps": 500,
+        "planner_invoked": false,
+        "planner_steps": 0,
+        "reward": -2371.49,
+        "min_clearance": 0.414
+      },
+      {
+        "seed": 4020,
+        "outcome": "TIMEOUT",
+        "steps": 500,
+        "planner_invoked": false,
+        "planner_steps": 0,
+        "reward": -1205.56,
+        "min_clearance": 0.195
+      },
+      {
+        "seed": 4021,
+        "outcome": "TIMEOUT",
+        "steps": 500,
+        "planner_invoked": false,
+        "planner_steps": 0,
+        "reward": -2244.55,
+        "min_clearance": 0.102
+      },
+      {
+        "seed": 4023,
+        "outcome": "TIMEOUT",
+        "steps": 500,
+        "planner_invoked": false,
+        "planner_steps": 0,
+        "reward": -1611.69,
+        "min_clearance": 0.151
+      },
+      {
+        "seed": 4024,
+        "outcome": "TIMEOUT",
+        "steps": 500,
+        "planner_invoked": false,
+        "planner_steps": 0,
+        "reward": -215.71,
+        "min_clearance": 0.309
+      },
+      {
+        "seed": 4026,
+        "outcome": "TIMEOUT",
+        "steps": 500,
+        "planner_invoked": false,
+        "planner_steps": 0,
+        "reward": -1459.81,
+        "min_clearance": 0.392
+      },
+      {
+        "seed": 4036,
+        "outcome": "TIMEOUT",
+        "steps": 500,
+        "planner_invoked": false,
+        "planner_steps": 0,
+        "reward": -1352.64,
+        "min_clearance": 0.067
+      },
+      {
+        "seed": 4048,
+        "outcome": "TIMEOUT",
+        "steps": 500,
+        "planner_invoked": false,
+        "planner_steps": 0,
+        "reward": -1547.64,
+        "min_clearance": 0.075
+      },
+      {
+        "seed": 4049,
+        "outcome": "SUCCESS",
+        "steps": 231,
+        "planner_invoked": false,
+        "planner_steps": 0,
+        "reward": -162.81,
+        "min_clearance": 0.142
+      },
+      {
+        "seed": 4052,
+        "outcome": "TIMEOUT",
+        "steps": 500,
+        "planner_invoked": false,
+        "planner_steps": 0,
+        "reward": -583.86,
+        "min_clearance": 0.254
+      },
+      {
+        "seed": 4053,
+        "outcome": "TIMEOUT",
+        "steps": 500,
+        "planner_invoked": false,
+        "planner_steps": 0,
+        "reward": -2388.66,
+        "min_clearance": 0.117
+      },
+      {
+        "seed": 4055,
+        "outcome": "TIMEOUT",
+        "steps": 500,
+        "planner_invoked": false,
+        "planner_steps": 0,
+        "reward": -2288.31,
+        "min_clearance": 0.404
+      },
+      {
+        "seed": 4056,
+        "outcome": "TIMEOUT",
+        "steps": 500,
+        "planner_invoked": false,
+        "planner_steps": 0,
+        "reward": -3358.64,
+        "min_clearance": 0.187
+      }
+    ]
+  },
+  "cumul_2_forward_creep": {
+    "config_name": "Cumulative 2: +anti_amnesia +forward_creep",
+    "shield_kwargs": {
+      "shield_version": "v1",
+      "anti_amnesia": true,
+      "forward_creep": true,
+      "guided_bypass": false,
+      "goal_proximity": false,
+      "oracle_planner": false
+    },
+    "success_count": 2,
+    "timeout_count": 13,
+    "collision_count": 0,
+    "planner_count": 0,
+    "resolved_count": 2,
+    "episodes": [
+      {
+        "seed": 4000,
+        "outcome": "TIMEOUT",
+        "steps": 500,
+        "planner_invoked": false,
+        "planner_steps": 0,
+        "reward": -2402.14,
+        "min_clearance": 0.202
+      },
+      {
+        "seed": 4015,
+        "outcome": "TIMEOUT",
+        "steps": 500,
+        "planner_invoked": false,
+        "planner_steps": 0,
+        "reward": -2443.9,
+        "min_clearance": 0.272
+      },
+      {
+        "seed": 4018,
+        "outcome": "TIMEOUT",
+        "steps": 500,
+        "planner_invoked": false,
+        "planner_steps": 0,
+        "reward": -2379.77,
+        "min_clearance": 0.219
+      },
+      {
+        "seed": 4020,
+        "outcome": "SUCCESS",
+        "steps": 246,
+        "planner_invoked": false,
+        "planner_steps": 0,
+        "reward": -247.72,
+        "min_clearance": 0.211
+      },
+      {
+        "seed": 4021,
+        "outcome": "TIMEOUT",
+        "steps": 500,
+        "planner_invoked": false,
+        "planner_steps": 0,
+        "reward": -2332.23,
+        "min_clearance": 0.068
+      },
+      {
+        "seed": 4023,
+        "outcome": "TIMEOUT",
+        "steps": 500,
+        "planner_invoked": false,
+        "planner_steps": 0,
+        "reward": -1541.9,
+        "min_clearance": 0.132
+      },
+      {
+        "seed": 4024,
+        "outcome": "TIMEOUT",
+        "steps": 500,
+        "planner_invoked": false,
+        "planner_steps": 0,
+        "reward": -215.71,
+        "min_clearance": 0.309
+      },
+      {
+        "seed": 4026,
+        "outcome": "TIMEOUT",
+        "steps": 500,
+        "planner_invoked": false,
+        "planner_steps": 0,
+        "reward": -1392.08,
+        "min_clearance": 0.206
+      },
+      {
+        "seed": 4036,
+        "outcome": "TIMEOUT",
+        "steps": 500,
+        "planner_invoked": false,
+        "planner_steps": 0,
+        "reward": -1352.69,
+        "min_clearance": 0.088
+      },
+      {
+        "seed": 4048,
+        "outcome": "TIMEOUT",
+        "steps": 500,
+        "planner_invoked": false,
+        "planner_steps": 0,
+        "reward": -1549.02,
+        "min_clearance": 0.118
+      },
+      {
+        "seed": 4049,
+        "outcome": "SUCCESS",
+        "steps": 258,
+        "planner_invoked": false,
+        "planner_steps": 0,
+        "reward": -224.69,
+        "min_clearance": 0.229
+      },
+      {
+        "seed": 4052,
+        "outcome": "TIMEOUT",
+        "steps": 500,
+        "planner_invoked": false,
+        "planner_steps": 0,
+        "reward": -869.27,
+        "min_clearance": 0.162
+      },
+      {
+        "seed": 4053,
+        "outcome": "TIMEOUT",
+        "steps": 500,
+        "planner_invoked": false,
+        "planner_steps": 0,
+        "reward": -2549.75,
+        "min_clearance": 0.127
+      },
+      {
+        "seed": 4055,
+        "outcome": "TIMEOUT",
+        "steps": 500,
+        "planner_invoked": false,
+        "planner_steps": 0,
+        "reward": -2288.31,
+        "min_clearance": 0.404
+      },
+      {
+        "seed": 4056,
+        "outcome": "TIMEOUT",
+        "steps": 500,
+        "planner_invoked": false,
+        "planner_steps": 0,
+        "reward": -3341.21,
+        "min_clearance": 0.143
+      }
+    ]
+  },
+  "cumul_3_guided_bypass": {
+    "config_name": "Cumulative 3: +anti_amnesia +forward_creep +guided_bypass",
+    "shield_kwargs": {
+      "shield_version": "v1",
+      "anti_amnesia": true,
+      "forward_creep": true,
+      "guided_bypass": true,
+      "goal_proximity": false,
+      "oracle_planner": false
+    },
+    "success_count": 2,
+    "timeout_count": 13,
+    "collision_count": 0,
+    "planner_count": 0,
+    "resolved_count": 2,
+    "episodes": [
+      {
+        "seed": 4000,
+        "outcome": "TIMEOUT",
+        "steps": 500,
+        "planner_invoked": false,
+        "planner_steps": 0,
+        "reward": -2632.36,
+        "min_clearance": 0.202
+      },
+      {
+        "seed": 4015,
+        "outcome": "TIMEOUT",
+        "steps": 500,
+        "planner_invoked": false,
+        "planner_steps": 0,
+        "reward": -2469.02,
+        "min_clearance": 0.314
+      },
+      {
+        "seed": 4018,
+        "outcome": "TIMEOUT",
+        "steps": 500,
+        "planner_invoked": false,
+        "planner_steps": 0,
+        "reward": -2379.77,
+        "min_clearance": 0.219
+      },
+      {
+        "seed": 4020,
+        "outcome": "TIMEOUT",
+        "steps": 500,
+        "planner_invoked": false,
+        "planner_steps": 0,
+        "reward": -2424.93,
+        "min_clearance": 0.16
+      },
+      {
+        "seed": 4021,
+        "outcome": "TIMEOUT",
+        "steps": 500,
+        "planner_invoked": false,
+        "planner_steps": 0,
+        "reward": -2676.28,
+        "min_clearance": 0.083
+      },
+      {
+        "seed": 4023,
+        "outcome": "SUCCESS",
+        "steps": 450,
+        "planner_invoked": false,
+        "planner_steps": 0,
+        "reward": -1109.52,
+        "min_clearance": 0.127
+      },
+      {
+        "seed": 4024,
+        "outcome": "TIMEOUT",
+        "steps": 500,
+        "planner_invoked": false,
+        "planner_steps": 0,
+        "reward": -188.11,
+        "min_clearance": 0.309
+      },
+      {
+        "seed": 4026,
+        "outcome": "TIMEOUT",
+        "steps": 500,
+        "planner_invoked": false,
+        "planner_steps": 0,
+        "reward": -1392.08,
+        "min_clearance": 0.206
+      },
+      {
+        "seed": 4036,
+        "outcome": "TIMEOUT",
+        "steps": 500,
+        "planner_invoked": false,
+        "planner_steps": 0,
+        "reward": -1246.79,
+        "min_clearance": 0.131
+      },
+      {
+        "seed": 4048,
+        "outcome": "TIMEOUT",
+        "steps": 500,
+        "planner_invoked": false,
+        "planner_steps": 0,
+        "reward": -1566.39,
+        "min_clearance": 0.098
+      },
+      {
+        "seed": 4049,
+        "outcome": "SUCCESS",
+        "steps": 244,
+        "planner_invoked": false,
+        "planner_steps": 0,
+        "reward": -135.7,
+        "min_clearance": 0.229
+      },
+      {
+        "seed": 4052,
+        "outcome": "TIMEOUT",
+        "steps": 500,
+        "planner_invoked": false,
+        "planner_steps": 0,
+        "reward": -667.05,
+        "min_clearance": 0.192
+      },
+      {
+        "seed": 4053,
+        "outcome": "TIMEOUT",
+        "steps": 500,
+        "planner_invoked": false,
+        "planner_steps": 0,
+        "reward": -2559.58,
+        "min_clearance": 0.201
+      },
+      {
+        "seed": 4055,
+        "outcome": "TIMEOUT",
+        "steps": 500,
+        "planner_invoked": false,
+        "planner_steps": 0,
+        "reward": -2333.3,
+        "min_clearance": 0.309
+      },
+      {
+        "seed": 4056,
+        "outcome": "TIMEOUT",
+        "steps": 500,
+        "planner_invoked": false,
+        "planner_steps": 0,
+        "reward": -3391.54,
+        "min_clearance": 0.232
+      }
+    ]
+  },
+  "cumul_4_goal_proximity": {
+    "config_name": "Cumulative 4: +anti_amnesia +forward_creep +guided_bypass +goal_proximity",
+    "shield_kwargs": {
+      "shield_version": "v1",
+      "anti_amnesia": true,
+      "forward_creep": true,
+      "guided_bypass": true,
+      "goal_proximity": true,
+      "oracle_planner": false
+    },
+    "success_count": 2,
+    "timeout_count": 13,
+    "collision_count": 0,
+    "planner_count": 0,
+    "resolved_count": 2,
+    "episodes": [
+      {
+        "seed": 4000,
+        "outcome": "TIMEOUT",
+        "steps": 500,
+        "planner_invoked": false,
+        "planner_steps": 0,
+        "reward": -2632.36,
+        "min_clearance": 0.202
+      },
+      {
+        "seed": 4015,
+        "outcome": "TIMEOUT",
+        "steps": 500,
+        "planner_invoked": false,
+        "planner_steps": 0,
+        "reward": -2469.02,
+        "min_clearance": 0.314
+      },
+      {
+        "seed": 4018,
+        "outcome": "TIMEOUT",
+        "steps": 500,
+        "planner_invoked": false,
+        "planner_steps": 0,
+        "reward": -2379.77,
+        "min_clearance": 0.219
+      },
+      {
+        "seed": 4020,
+        "outcome": "TIMEOUT",
+        "steps": 500,
+        "planner_invoked": false,
+        "planner_steps": 0,
+        "reward": -2424.93,
+        "min_clearance": 0.16
+      },
+      {
+        "seed": 4021,
+        "outcome": "TIMEOUT",
+        "steps": 500,
+        "planner_invoked": false,
+        "planner_steps": 0,
+        "reward": -2676.28,
+        "min_clearance": 0.083
+      },
+      {
+        "seed": 4023,
+        "outcome": "SUCCESS",
+        "steps": 457,
+        "planner_invoked": false,
+        "planner_steps": 0,
+        "reward": -1118.61,
+        "min_clearance": 0.127
+      },
+      {
+        "seed": 4024,
+        "outcome": "TIMEOUT",
+        "steps": 500,
+        "planner_invoked": false,
+        "planner_steps": 0,
+        "reward": -188.11,
+        "min_clearance": 0.309
+      },
+      {
+        "seed": 4026,
+        "outcome": "TIMEOUT",
+        "steps": 500,
+        "planner_invoked": false,
+        "planner_steps": 0,
+        "reward": -1392.08,
+        "min_clearance": 0.206
+      },
+      {
+        "seed": 4036,
+        "outcome": "TIMEOUT",
+        "steps": 500,
+        "planner_invoked": false,
+        "planner_steps": 0,
+        "reward": -1246.79,
+        "min_clearance": 0.131
+      },
+      {
+        "seed": 4048,
+        "outcome": "TIMEOUT",
+        "steps": 500,
+        "planner_invoked": false,
+        "planner_steps": 0,
+        "reward": -1566.39,
+        "min_clearance": 0.098
+      },
+      {
+        "seed": 4049,
+        "outcome": "SUCCESS",
+        "steps": 255,
+        "planner_invoked": false,
+        "planner_steps": 0,
+        "reward": -135.05,
+        "min_clearance": 0.229
+      },
+      {
+        "seed": 4052,
+        "outcome": "TIMEOUT",
+        "steps": 500,
+        "planner_invoked": false,
+        "planner_steps": 0,
+        "reward": -667.05,
+        "min_clearance": 0.192
+      },
+      {
+        "seed": 4053,
+        "outcome": "TIMEOUT",
+        "steps": 500,
+        "planner_invoked": false,
+        "planner_steps": 0,
+        "reward": -2559.58,
+        "min_clearance": 0.201
+      },
+      {
+        "seed": 4055,
+        "outcome": "TIMEOUT",
+        "steps": 500,
+        "planner_invoked": false,
+        "planner_steps": 0,
+        "reward": -2333.3,
+        "min_clearance": 0.309
+      },
+      {
+        "seed": 4056,
+        "outcome": "TIMEOUT",
+        "steps": 500,
+        "planner_invoked": false,
+        "planner_steps": 0,
+        "reward": -3391.54,
+        "min_clearance": 0.232
+      }
+    ]
+  },
+  "cumul_5_full_v2": {
+    "config_name": "Cumulative 5: Full v2 (+oracle_planner)",
+    "shield_kwargs": {
+      "shield_version": "v1",
+      "anti_amnesia": true,
+      "forward_creep": true,
+      "guided_bypass": true,
+      "goal_proximity": true,
+      "oracle_planner": true
+    },
+    "success_count": 15,
+    "timeout_count": 0,
+    "collision_count": 0,
+    "planner_count": 15,
+    "resolved_count": 15,
+    "episodes": [
+      {
+        "seed": 4000,
+        "outcome": "SUCCESS",
+        "steps": 464,
+        "planner_invoked": true,
+        "planner_steps": 145,
+        "reward": -1379.19,
+        "min_clearance": 0.168
+      },
+      {
+        "seed": 4015,
+        "outcome": "SUCCESS",
+        "steps": 200,
+        "planner_invoked": true,
+        "planner_steps": 46,
+        "reward": -34.79,
+        "min_clearance": 0.273
+      },
+      {
+        "seed": 4018,
+        "outcome": "SUCCESS",
+        "steps": 379,
+        "planner_invoked": true,
+        "planner_steps": 116,
+        "reward": -835.03,
+        "min_clearance": 0.157
+      },
+      {
+        "seed": 4020,
+        "outcome": "SUCCESS",
+        "steps": 260,
+        "planner_invoked": true,
+        "planner_steps": 45,
+        "reward": -408.36,
+        "min_clearance": 0.219
+      },
+      {
+        "seed": 4021,
+        "outcome": "SUCCESS",
+        "steps": 264,
+        "planner_invoked": true,
+        "planner_steps": 63,
+        "reward": -488.08,
+        "min_clearance": 0.122
+      },
+      {
+        "seed": 4023,
+        "outcome": "SUCCESS",
+        "steps": 259,
+        "planner_invoked": true,
+        "planner_steps": 45,
+        "reward": -182.76,
+        "min_clearance": 0.285
+      },
+      {
+        "seed": 4024,
+        "outcome": "SUCCESS",
+        "steps": 301,
+        "planner_invoked": true,
+        "planner_steps": 68,
+        "reward": -224.35,
+        "min_clearance": 0.121
+      },
+      {
+        "seed": 4026,
+        "outcome": "SUCCESS",
+        "steps": 368,
+        "planner_invoked": true,
+        "planner_steps": 99,
+        "reward": -322.75,
+        "min_clearance": 0.115
+      },
+      {
+        "seed": 4036,
+        "outcome": "SUCCESS",
+        "steps": 463,
+        "planner_invoked": true,
+        "planner_steps": 169,
+        "reward": -621.06,
+        "min_clearance": 0.152
+      },
+      {
+        "seed": 4048,
+        "outcome": "SUCCESS",
+        "steps": 258,
+        "planner_invoked": true,
+        "planner_steps": 45,
+        "reward": -224.06,
+        "min_clearance": 0.28
+      },
+      {
+        "seed": 4049,
+        "outcome": "SUCCESS",
+        "steps": 232,
+        "planner_invoked": true,
+        "planner_steps": 48,
+        "reward": -94.33,
+        "min_clearance": 0.217
+      },
+      {
+        "seed": 4052,
+        "outcome": "SUCCESS",
+        "steps": 327,
+        "planner_invoked": true,
+        "planner_steps": 109,
+        "reward": -239.37,
+        "min_clearance": 0.103
+      },
+      {
+        "seed": 4053,
+        "outcome": "SUCCESS",
+        "steps": 296,
+        "planner_invoked": true,
+        "planner_steps": 114,
+        "reward": -601.0,
+        "min_clearance": 0.087
+      },
+      {
+        "seed": 4055,
+        "outcome": "SUCCESS",
+        "steps": 225,
+        "planner_invoked": true,
+        "planner_steps": 45,
+        "reward": -163.88,
+        "min_clearance": 0.309
+      },
+      {
+        "seed": 4056,
+        "outcome": "SUCCESS",
+        "steps": 395,
+        "planner_invoked": true,
+        "planner_steps": 98,
+        "reward": -1233.82,
+        "min_clearance": 0.159
+      }
+    ]
+  }
+}
