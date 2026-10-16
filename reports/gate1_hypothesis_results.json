@@ -1,0 +1,462 @@
+{
+  "baseline": {
+    "4000": {
+      "outcome": "TIMEOUT",
+      "steps": 500,
+      "dist_goal": 7.331,
+      "min_clr": 0.202
+    },
+    "4015": {
+      "outcome": "TIMEOUT",
+      "steps": 500,
+      "dist_goal": 9.808,
+      "min_clr": 0.327
+    },
+    "4018": {
+      "outcome": "TIMEOUT",
+      "steps": 500,
+      "dist_goal": 8.99,
+      "min_clr": 0.414
+    },
+    "4020": {
+      "outcome": "TIMEOUT",
+      "steps": 500,
+      "dist_goal": 6.878,
+      "min_clr": 0.195
+    },
+    "4021": {
+      "outcome": "TIMEOUT",
+      "steps": 500,
+      "dist_goal": 9.956,
+      "min_clr": 0.198
+    },
+    "4023": {
+      "outcome": "TIMEOUT",
+      "steps": 500,
+      "dist_goal": 4.677,
+      "min_clr": 0.25
+    },
+    "4024": {
+      "outcome": "TIMEOUT",
+      "steps": 500,
+      "dist_goal": 13.09,
+      "min_clr": 0.309
+    },
+    "4026": {
+      "outcome": "TIMEOUT",
+      "steps": 500,
+      "dist_goal": 4.745,
+      "min_clr": 0.392
+    },
+    "4036": {
+      "outcome": "TIMEOUT",
+      "steps": 500,
+      "dist_goal": 5.789,
+      "min_clr": 0.075
+    },
+    "4048": {
+      "outcome": "TIMEOUT",
+      "steps": 500,
+      "dist_goal": 11.169,
+      "min_clr": 0.075
+    },
+    "4049": {
+      "outcome": "TIMEOUT",
+      "steps": 500,
+      "dist_goal": 8.46,
+      "min_clr": 0.08
+    },
+    "4052": {
+      "outcome": "TIMEOUT",
+      "steps": 500,
+      "dist_goal": 13.116,
+      "min_clr": 0.121
+    },
+    "4053": {
+      "outcome": "TIMEOUT",
+      "steps": 500,
+      "dist_goal": 8.332,
+      "min_clr": 0.117
+    },
+    "4055": {
+      "outcome": "TIMEOUT",
+      "steps": 500,
+      "dist_goal": 8.239,
+      "min_clr": 0.387
+    },
+    "4056": {
+      "outcome": "TIMEOUT",
+      "steps": 500,
+      "dist_goal": 9.053,
+      "min_clr": 0.187
+    }
+  },
+  "fix_amnesia_only": {
+    "4000": {
+      "outcome": "TIMEOUT",
+      "steps": 500,
+      "dist_goal": 11.486,
+      "min_clr": 0.202
+    },
+    "4015": {
+      "outcome": "TIMEOUT",
+      "steps": 500,
+      "dist_goal": 9.801,
+      "min_clr": 0.327
+    },
+    "4018": {
+      "outcome": "TIMEOUT",
+      "steps": 500,
+      "dist_goal": 8.99,
+      "min_clr": 0.414
+    },
+    "4020": {
+      "outcome": "TIMEOUT",
+      "steps": 500,
+      "dist_goal": 6.687,
+      "min_clr": 0.195
+    },
+    "4021": {
+      "outcome": "TIMEOUT",
+      "steps": 500,
+      "dist_goal": 9.796,
+      "min_clr": 0.102
+    },
+    "4023": {
+      "outcome": "TIMEOUT",
+      "steps": 500,
+      "dist_goal": 4.901,
+      "min_clr": 0.151
+    },
+    "4024": {
+      "outcome": "TIMEOUT",
+      "steps": 500,
+      "dist_goal": 13.111,
+      "min_clr": 0.309
+    },
+    "4026": {
+      "outcome": "TIMEOUT",
+      "steps": 500,
+      "dist_goal": 4.745,
+      "min_clr": 0.392
+    },
+    "4036": {
+      "outcome": "TIMEOUT",
+      "steps": 500,
+      "dist_goal": 5.81,
+      "min_clr": 0.067
+    },
+    "4048": {
+      "outcome": "TIMEOUT",
+      "steps": 500,
+      "dist_goal": 11.504,
+      "min_clr": 0.064
+    },
+    "4049": {
+      "outcome": "SUCCESS",
+      "steps": 237,
+      "dist_goal": 0.687,
+      "min_clr": 0.142
+    },
+    "4052": {
+      "outcome": "TIMEOUT",
+      "steps": 500,
+      "dist_goal": 13.009,
+      "min_clr": 0.123
+    },
+    "4053": {
+      "outcome": "TIMEOUT",
+      "steps": 500,
+      "dist_goal": 8.376,
+      "min_clr": 0.117
+    },
+    "4055": {
+      "outcome": "TIMEOUT",
+      "steps": 500,
+      "dist_goal": 8.23,
+      "min_clr": 0.404
+    },
+    "4056": {
+      "outcome": "TIMEOUT",
+      "steps": 500,
+      "dist_goal": 9.113,
+      "min_clr": 0.187
+    }
+  },
+  "fix_vy_lock_only": {
+    "4000": {
+      "outcome": "TIMEOUT",
+      "steps": 500,
+      "dist_goal": 7.651,
+      "min_clr": 0.202
+    },
+    "4015": {
+      "outcome": "TIMEOUT",
+      "steps": 500,
+      "dist_goal": 9.661,
+      "min_clr": 0.272
+    },
+    "4018": {
+      "outcome": "TIMEOUT",
+      "steps": 500,
+      "dist_goal": 8.602,
+      "min_clr": 0.222
+    },
+    "4020": {
+      "outcome": "SUCCESS",
+      "steps": 278,
+      "dist_goal": 0.759,
+      "min_clr": 0.198
+    },
+    "4021": {
+      "outcome": "TIMEOUT",
+      "steps": 500,
+      "dist_goal": 9.757,
+      "min_clr": 0.068
+    },
+    "4023": {
+      "outcome": "TIMEOUT",
+      "steps": 500,
+      "dist_goal": 4.677,
+      "min_clr": 0.25
+    },
+    "4024": {
+      "outcome": "TIMEOUT",
+      "steps": 500,
+      "dist_goal": 13.09,
+      "min_clr": 0.309
+    },
+    "4026": {
+      "outcome": "TIMEOUT",
+      "steps": 500,
+      "dist_goal": 4.555,
+      "min_clr": 0.209
+    },
+    "4036": {
+      "outcome": "TIMEOUT",
+      "steps": 500,
+      "dist_goal": 5.719,
+      "min_clr": 0.097
+    },
+    "4048": {
+      "outcome": "TIMEOUT",
+      "steps": 500,
+      "dist_goal": 11.608,
+      "min_clr": 0.11
+    },
+    "4049": {
+      "outcome": "SUCCESS",
+      "steps": 275,
+      "dist_goal": 0.743,
+      "min_clr": 0.229
+    },
+    "4052": {
+      "outcome": "TIMEOUT",
+      "steps": 500,
+      "dist_goal": 13.244,
+      "min_clr": 0.15
+    },
+    "4053": {
+      "outcome": "TIMEOUT",
+      "steps": 500,
+      "dist_goal": 8.307,
+      "min_clr": 0.16
+    },
+    "4055": {
+      "outcome": "TIMEOUT",
+      "steps": 500,
+      "dist_goal": 8.239,
+      "min_clr": 0.387
+    },
+    "4056": {
+      "outcome": "TIMEOUT",
+      "steps": 500,
+      "dist_goal": 8.953,
+      "min_clr": 0.143
+    }
+  },
+  "fix_both": {
+    "4000": {
+      "outcome": "TIMEOUT",
+      "steps": 500,
+      "dist_goal": 11.486,
+      "min_clr": 0.202
+    },
+    "4015": {
+      "outcome": "TIMEOUT",
+      "steps": 500,
+      "dist_goal": 9.661,
+      "min_clr": 0.272
+    },
+    "4018": {
+      "outcome": "TIMEOUT",
+      "steps": 500,
+      "dist_goal": 8.602,
+      "min_clr": 0.222
+    },
+    "4020": {
+      "outcome": "SUCCESS",
+      "steps": 278,
+      "dist_goal": 0.759,
+      "min_clr": 0.198
+    },
+    "4021": {
+      "outcome": "TIMEOUT",
+      "steps": 500,
+      "dist_goal": 9.722,
+      "min_clr": 0.068
+    },
+    "4023": {
+      "outcome": "TIMEOUT",
+      "steps": 500,
+      "dist_goal": 4.928,
+      "min_clr": 0.132
+    },
+    "4024": {
+      "outcome": "TIMEOUT",
+      "steps": 500,
+      "dist_goal": 13.111,
+      "min_clr": 0.309
+    },
+    "4026": {
+      "outcome": "TIMEOUT",
+      "steps": 500,
+      "dist_goal": 4.555,
+      "min_clr": 0.209
+    },
+    "4036": {
+      "outcome": "TIMEOUT",
+      "steps": 500,
+      "dist_goal": 5.428,
+      "min_clr": 0.095
+    },
+    "4048": {
+      "outcome": "TIMEOUT",
+      "steps": 500,
+      "dist_goal": 11.614,
+      "min_clr": 0.064
+    },
+    "4049": {
+      "outcome": "TIMEOUT",
+      "steps": 500,
+      "dist_goal": 1.225,
+      "min_clr": 0.152
+    },
+    "4052": {
+      "outcome": "TIMEOUT",
+      "steps": 500,
+      "dist_goal": 13.049,
+      "min_clr": 0.153
+    },
+    "4053": {
+      "outcome": "TIMEOUT",
+      "steps": 500,
+      "dist_goal": 8.259,
+      "min_clr": 0.148
+    },
+    "4055": {
+      "outcome": "TIMEOUT",
+      "steps": 500,
+      "dist_goal": 8.23,
+      "min_clr": 0.404
+    },
+    "4056": {
+      "outcome": "TIMEOUT",
+      "steps": 500,
+      "dist_goal": 8.953,
+      "min_clr": 0.143
+    }
+  },
+  "fix_full_candidate": {
+    "4000": {
+      "outcome": "TIMEOUT",
+      "steps": 500,
+      "dist_goal": 7.586,
+      "min_clr": 0.202
+    },
+    "4015": {
+      "outcome": "TIMEOUT",
+      "steps": 500,
+      "dist_goal": 9.762,
+      "min_clr": 0.272
+    },
+    "4018": {
+      "outcome": "TIMEOUT",
+      "steps": 500,
+      "dist_goal": 8.602,
+      "min_clr": 0.222
+    },
+    "4020": {
+      "outcome": "SUCCESS",
+      "steps": 242,
+      "dist_goal": 0.761,
+      "min_clr": 0.211
+    },
+    "4021": {
+      "outcome": "TIMEOUT",
+      "steps": 500,
+      "dist_goal": 9.724,
+      "min_clr": 0.112
+    },
+    "4023": {
+      "outcome": "SUCCESS",
+      "steps": 343,
+      "dist_goal": 0.799,
+      "min_clr": 0.267
+    },
+    "4024": {
+      "outcome": "TIMEOUT",
+      "steps": 500,
+      "dist_goal": 13.111,
+      "min_clr": 0.309
+    },
+    "4026": {
+      "outcome": "TIMEOUT",
+      "steps": 500,
+      "dist_goal": 4.555,
+      "min_clr": 0.209
+    },
+    "4036": {
+      "outcome": "TIMEOUT",
+      "steps": 500,
+      "dist_goal": 5.048,
+      "min_clr": 0.181
+    },
+    "4048": {
+      "outcome": "TIMEOUT",
+      "steps": 500,
+      "dist_goal": 11.608,
+      "min_clr": 0.093
+    },
+    "4049": {
+      "outcome": "SUCCESS",
+      "steps": 301,
+      "dist_goal": 0.765,
+      "min_clr": 0.108
+    },
+    "4052": {
+      "outcome": "TIMEOUT",
+      "steps": 500,
+      "dist_goal": 13.123,
+      "min_clr": 0.213
+    },
+    "4053": {
+      "outcome": "TIMEOUT",
+      "steps": 500,
+      "dist_goal": 7.755,
+      "min_clr": 0.18
+    },
+    "4055": {
+      "outcome": "TIMEOUT",
+      "steps": 500,
+      "dist_goal": 8.281,
+      "min_clr": 0.404
+    },
+    "4056": {
+      "outcome": "TIMEOUT",
+      "steps": 500,
+      "dist_goal": 8.986,
+      "min_clr": 0.236
+    }
+  }
+}
