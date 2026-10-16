@@ -19,9 +19,11 @@ echo  [3] Launch TensorBoard Monitor (http://localhost:6006)
 echo  [4] Run Quick Headless Test
 echo  [5] OVERNIGHT 4-HOUR TRAINING + AUTO SHUTDOWN (Run before sleeping)
 echo  [6] Exit
+echo  [7] Evaluate with SHR Shield v2 (Live 3-Panel GUI Dashboard)
+echo  [8] SHR Shield v2 Comparative Safety Benchmark (Reference seeds, OFF vs ON)
 echo.
 echo =========================================================================
-set /p CHOICE="Select an option [0-6]: "
+set /p CHOICE="Select an option [0-8]: "
 
 if "%CHOICE%"=="0" goto PRETRAIN
 if "%CHOICE%"=="1" goto TRAIN
@@ -30,6 +32,8 @@ if "%CHOICE%"=="3" goto TENSORBOARD
 if "%CHOICE%"=="4" goto DRYRUN
 if "%CHOICE%"=="5" goto OVERNIGHT
 if "%CHOICE%"=="6" goto END
+if "%CHOICE%"=="7" goto SHIELD_V2_GUI
+if "%CHOICE%"=="8" goto SHIELD_V2_BENCH
 
 echo Invalid selection! Please try again.
 pause
@@ -87,6 +91,32 @@ goto MENU
 
 :OVERNIGHT
 call overnight_train.bat
+goto MENU
+
+:SHIELD_V2_GUI
+CLS
+echo [*] Launching Evaluation with SHR Safety Shield v2 (Oracle mode)...
+echo [*] Live 3-Panel XAI Dashboard with Real-Time Shield Telemetry
+echo [*] Privileged Simulator Information: analytical raycasting + A* path planning
+echo [*] Checkpoint: best_model_baseline.pt
+echo [*] Eval Mode: UNSEEN reference environments (seeds 101, 202, 303, 404, 505)
+python evaluate_and_visualize.py --checkpoint best_model_baseline.pt --eval-mode unseen --gui --shield --shield-mode oracle --shield-version v2
+echo.
+echo [*] Shield v2 evaluation finished.
+pause
+goto MENU
+
+:SHIELD_V2_BENCH
+CLS
+echo [*] Running SHR Shield v2 Comparative Safety Benchmark...
+echo [*] Privileged Simulator Information: analytical raycasting + A* path planning
+echo [*] Checkpoint: best_model_baseline.pt
+echo [*] Seeds: Reference set [101, 202, 303, 404, 505]
+echo [*] Sequential A/B comparison: Baseline (OFF) vs Oracle v2 (ON) vs Camera v2 (ON)
+python eval_shield.py --checkpoint best_model_baseline.pt --seeds reference --compare --shield-version v2
+echo.
+echo [*] Comparative benchmark finished. Reports saved to reports/
+pause
 goto MENU
 
 :END
