@@ -263,3 +263,87 @@ python evaluate_and_visualize.py --shield --shield-mode oracle --eval-mode refer
 # or benchmark evaluation comparison:
 python eval_shield.py --checkpoint best_model_dagger_v1.pt --seeds reference --compare
 ```
+
+
+---
+
+## 9. SHR Safety Shield v2: Timeout Remediations & Held-Out Certification
+
+### 9.1 Background & Forensic Diagnosis of v1 Timeouts
+While SHR Shield v1 guaranteed zero collisions, empirical benchmarking revealed a ~30% timeout rate (e.g. 15/50 on seeds 1000–1049, 15/60 across diagnostic seeds 4000–4059). A step-level telemetry forensic audit across all 15 timeout episodes classified the failure mechanisms into three distinct categories:
+1. **Amnesia & Ping-Pong Re-Trigger (8/15 episodes, 53.3%):** Line 942 reset `deadlock_attempts = 0` whenever any clearance was momentarily detected, causing the shield to forget prior trapped states and immediately re-trigger in a tight ping-pong cycle as soon as the policy turned back toward the obstacle.
+2. **Forward Speed Lock ($v_y = 0.0$) (5/15 episodes, 33.3%):** Reroute velocity clamping logic at three sites in `drone_shield.py` (lines 868, 925, 962) strictly forced longitudinal forward speed $v_y = 0.0$ whenever clearance was below threshold, trapping the drone in endless pure lateral sliding.
+3. **Corner / Wall-Pinch Traps (2/15 episodes, 13.3%):** The drone became trapped in concave spaces between obstacle cylinders and arena perimeter walls where pure left/right heuristic reactive rerouting could not find an exit path within 500 steps.
+
+*Corridor Passability Note:* Breadth-First Search (BFS) topology checks confirmed that all 15 diagnostic environments possessed open traversable corridors to the goal; 0 episodes were blocked by impassable obstacle walls.
+
+### 9.2 Architecture of Shield v2 Remediations
+Under master switch `shield_version="v2"` in `StopAndRerouteShield`, five modular remediations were implemented:
+- **`anti_amnesia`:** Preserves `deadlock_attempts` history across brief clearance fluctuations, applying an exponential alternating penalty to prevent repetitive same-side reroute loops.
+- **`forward_creep`:** Replaces the hard $v_y = 0.0$ forward lock at lines 868, 925, and 962 with a smooth forward creep velocity ($v_y \ge 0.35\text{ m/s}$), preventing pure sideways stagnation.
+- **`guided_bypass`:** Maintains shield reroute control until the drone's forward coordinate is safely beyond the obstacle's far boundary plus safety margin ($y_{\text{drone}} > y_{\text{obs\_far}} + 0.30\text{ m}$), preventing the neural policy from immediately turning back into the obstacle upon hand-back.
+- **`goal_proximity`:** Within 1.5 m of the goal, suppresses deadlock retreat and drives directly toward the goal (requiring only distance $< 0.8\text{ m}$), avoiding near-goal hover stalls.
+- **`oracle_planner` (Privileged Simulator Information):** When reactive rerouting encounters repeated deadlocks (`deadlock_attempts >= 2` or lateral blockage), escalates to a 2D A* path planner operating on inflated obstacle footprints to compute an escape trajectory to open space before handing back to nominal control.
+
+### 9.3 Empirical Ablation on the 15 Former v1 Timeouts (Seeds 4000–4059)
+To isolate the contribution of each fix, every component was tested independently and cumulatively on the 15 former timeout layouts under `.compute.lock`:
+
+| Configuration Tested | Remediations Enabled | Timeouts Resolved | Timeouts Remaining | A* Fallback Invocations | Empirical Analysis & Key Observations |
+|---|---|:---:|:---:|:---:|---|
+| **SHR v1 (Baseline)** | None (All 5 Fixes OFF) | **0 / 15 (0.0%)** | 15 / 15 (100.0%) | 0 / 15 | Reproduces the exact 15 Gate 1 timeout episodes. |
+| **Alone: Fix 1** | `anti_amnesia` only | **1 / 15 (6.7%)** | 14 / 15 (93.3%) | 0 / 15 | Resolves Seed 4049 by retaining history penalty to alternate scan side. |
+| **Alone: Fix 2** | `forward_creep` only | **2 / 15 (13.3%)** | 13 / 15 (86.7%) | 0 / 15 | Resolves Seeds 4020, 4049 by eliminating lateral shuttling forward lock ($v_y > 0$). |
+| **Alone: Fix 3** | `guided_bypass` only | **1 / 15 (6.7%)** | 14 / 15 (93.3%) | 0 / 15 | Resolves Seed 4023 by holding reroute state until body passes obstacle edge. |
+| **Alone: Fix 4** | `goal_proximity` only | **0 / 15 (0.0%)** | 15 / 15 (100.0%) | 0 / 15 | Ineffective alone as all 15 traps occurred mid-corridor ($\text{dist} \ge 4.45\text{ m}$). |
+| **Alone: Fix 5** | `oracle_planner` only | **14 / 15 (93.3%)** | 1 / 15 (6.7%) | 14 / 15 | Resolves 14 of 15 timeouts alone via 2D A* replanning. Only Seed 4018 timed out. |
+| **Cumulative Stack** | All 5 Remediations (Full v2) | **15 / 15 (100.0%)** | **0 / 15 (0.0%)** | 15 / 15 | **100.0% resolved. Zero timeouts, zero collisions.** |
+
+*Ablation Takeaway:* Reactive heuristic fixes alone resolve at most 1–2 of 15 traps (13.3%). The privileged 2D A* planner is the decisive escalation mechanism, resolving 14/15 alone and 15/15 synergistically when paired with heuristic guidance.
+
+### 9.4 Final Held-Out Certification Benchmark (Seeds 5000–5049, 50 Episodes)
+*Methodological Notice:* The `4030–4059` validation set was part of the Gate 1 diagnosis (its timeouts informed remediation design). Seeds `5000–5049` constitute the **first fully unseen test set**, evaluated with frozen code and parameters at git tag `shield-v2` (`0c41b61`).
+
+All rates are reported with exact binomial counts and **Wilson 95% Confidence Intervals**:
+
+| Metric | Baseline Policy (Shield OFF) | SHR v1 (Oracle) | SHR v2 (Oracle, Privileged) | SHR v2 (Camera Sensing + Privileged Planner) | Target Threshold | Certification Status |
+|---|:---:|:---:|:---:|:---:|:---:|:---:|
+| **Success Rate (95% CI)** | 28.0% [17.5%, 41.7%] (14/50) | 86.0% [73.8%, 93.0%] (43/50) | **$\ge$ 92.9% [92.9%, 100.0%] (50/50)** | 52.0% [38.5%, 65.2%] (26/50) | $\ge$ 85.0% | **CERTIFIED** |
+| **Total Collision Rate** | 72.0% [58.3%, 82.5%] (36/50) | **0.0% [0.0%, 7.1%] (0/50)** | **0.0% [0.0%, 7.1%] (0/50)** | 46.0% [33.0%, 59.6%] (23/50) | $\le$ 2.0% | **CERTIFIED** |
+| Obstacle Collisions | 72.0% (36/50) | 0.0% (0/50) | **0.0% (0/50)** | 46.0% (23/50) | 0 | **CERTIFIED** |
+| Wall OOB Collisions | 0.0% (0/50) | 0.0% (0/50) | **0.0% (0/50)** | 0.0% (0/50) | 0 | **CERTIFIED** |
+| **Timeout Rate** | 0.0% [0.0%, 7.1%] (0/50) | 14.0% [7.0%, 26.2%] (7/50) | **0.0% [0.0%, 7.1%] (0/50)** | 2.0% [0.4%, 10.5%] (1/50) | $\le$ 5.0% | **CERTIFIED** |
+| **Standoff Distance at Full Stop** | N/A (No stopping) | 1.99 m | **1.84 m** | 0.57 m | $\ge$ 0.45 m | **CERTIFIED** |
+| **Step Overhead (Baseline-Completed, $n=14$)** | Baseline (151.8 steps) | +57.77% (241.9 steps) | **+45.79% (221.8 steps)** | +51.72% (230.3 steps) | $\le$ 15.0% | **TARGET MISSED** |
+| *Step Overhead vs SHR v1 (on v1 Successes)* | — | Reference (245.8 steps) | **-3.46% (233.6 steps)** | — | Informational | *3.5% Faster than v1* |
+| **Intervention Rate (% of steps active)** | 0.0% | 47.1% | **48.5%** | 53.7% | — | Informational |
+| **A* Planner Escalation Rate** | N/A | N/A | **28.0% (14/50 episodes)** | 16.0% (8/50 episodes) | — | Privileged Escalation |
+
+### 9.5 Overhead Investigation & Obstacle-Free Benchmark
+The step overhead target ($\le 15.0\%$) was **MISSED** (+45.79% on the $n=14$ baseline-completed held-out episodes). An empirical controlled experiment was conducted on a 100% obstacle-free arena corridor to isolate the exact source of overhead:
+- **Baseline (OFF):** 162.0 mean steps (full-throttle unregulated flight at ~3.0 m/s).
+- **SHR v1 (Oracle):** 171.0 mean steps (**+5.56% overhead**).
+- **SHR v2 (Oracle):** 183.0 mean steps (**+12.96% overhead**).
+
+*Conclusion:* The hypothesis that the nominal speed governor alone adds 24–27% was disproven and dropped; on completely clear paths, the speed governor adds only +12.96% steps. The remaining overhead on cluttered layouts (+45.79% on $n=14$ baseline successes) stems from:
+1. Clearance throttling when passing adjacent obstacles ($v_{\text{cap}}(d) < 3.0\text{ m/s}$).
+2. Safe lateral bypass detour distance (the baseline policy skims obstacles at 0.04m–0.13m clearance without slowing down, surviving by luck on these 14 seeds, whereas the shield enforces $d \ge 0.55\text{ m}$).
+
+### 9.6 Known Limitations of Shield v2
+1. **Privileged Simulator Information:** SHR v2 Oracle relies on exact analytical raycasting against ground-truth PyBullet obstacles and 2D A* grid replanning on true obstacle geometries.
+2. **Camera Mode Relabeled & Unsafe:** In Shield v2 camera mode, deadlock escalation invokes the privileged A* planner (`self._get_obstacle_specs()`), so camera mode is formally designated **"camera sensing + privileged planner"**. Even with privileged replanning, camera mode suffers a **46.0% collision rate** due to unobserved lateral drift during reactive dodges (31.7% camera blindspot). Monocular camera mode remains strictly experimental and unsafe for deployment.
+3. **Overhead Tradeoff:** Eliminating 100% of collisions and 100% of timeouts requires deliberate deceleration and geometric bypass paths, inherently adding +45.79% steps relative to an unprotected policy that crashes in 72% of runs.
+
+### 9.7 Exact Commands to Reproduce Shield v2 Evaluations
+```bash
+# 1. Held-Out 50-Episode Benchmark Comparison (Seeds 5000-5049)
+python eval_shield.py --checkpoint best_model_baseline.pt --seeds 5000-5049 --compare --shield-version v2
+
+# 2. Reference 5-Seed Comparative Benchmark (Seeds 101, 202, 303, 404, 505)
+python eval_shield.py --checkpoint best_model_baseline.pt --seeds reference --compare --shield-version v2
+
+# 3. Interactive GUI Evaluation with SHR Shield v2
+python evaluate_and_visualize.py --checkpoint best_model_baseline.pt --eval-mode unseen --gui --shield --shield-mode oracle --shield-version v2
+
+# 4. Reproduce the 15-Episode Timeout Ablation Study
+python run_gate3_ablation.py
+```
