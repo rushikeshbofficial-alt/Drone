@@ -15,3 +15,4 @@ runs/
 Thumbs.db
 *.tmp
 *.log
+*telemetry*.json
