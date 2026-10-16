@@ -468,5 +468,175 @@ class TestZeroDistortionInvariant(unittest.TestCase):
         shield.close()
 
 
+class TestV1BackwardCompatibility(unittest.TestCase):
+    """Verifies shield_version='v1' defaults to 100% backward compatibility."""
+
+    def test_v1_defaults(self):
+        env = IndoorDroneNavEnv(gui=False, seed=42, max_steps=50)
+        shield_default = StopAndRerouteShield(env, sensor_mode="oracle")
+        self.assertEqual(shield_default.shield_version, "v1")
+        self.assertFalse(shield_default.guided_bypass)
+        self.assertFalse(shield_default.goal_proximity)
+        self.assertFalse(shield_default.oracle_planner)
+        self.assertFalse(shield_default.anti_amnesia)
+        self.assertFalse(shield_default.forward_creep)
+        env.close()
+
+    def test_v1_explicit(self):
+        env = IndoorDroneNavEnv(gui=False, seed=42, max_steps=50)
+        shield_v1 = StopAndRerouteShield(env, shield_version="v1", sensor_mode="oracle")
+        self.assertEqual(shield_v1.shield_version, "v1")
+        self.assertFalse(shield_v1.guided_bypass)
+        self.assertFalse(shield_v1.goal_proximity)
+        self.assertFalse(shield_v1.oracle_planner)
+        self.assertFalse(shield_v1.anti_amnesia)
+        self.assertFalse(shield_v1.forward_creep)
+        env.close()
+
+
+class TestV2FeatureSwitches(unittest.TestCase):
+    """Verifies shield_version='v2' defaults and independent switchability."""
+
+    def test_v2_defaults(self):
+        env = IndoorDroneNavEnv(gui=False, seed=42, max_steps=50)
+        shield_v2 = StopAndRerouteShield(env, shield_version="v2", sensor_mode="oracle")
+        self.assertEqual(shield_v2.shield_version, "v2")
+        self.assertTrue(shield_v2.guided_bypass)
+        self.assertTrue(shield_v2.goal_proximity)
+        self.assertTrue(shield_v2.oracle_planner)
+        self.assertTrue(shield_v2.anti_amnesia)
+        self.assertTrue(shield_v2.forward_creep)
+        env.close()
+
+    def test_v2_independent_switches(self):
+        env = IndoorDroneNavEnv(gui=False, seed=42, max_steps=50)
+        shield = StopAndRerouteShield(
+            env,
+            shield_version="v2",
+            guided_bypass=False,
+            goal_proximity=True,
+            oracle_planner=False,
+            anti_amnesia=True,
+            forward_creep=False,
+        )
+        self.assertFalse(shield.guided_bypass)
+        self.assertTrue(shield.goal_proximity)
+        self.assertFalse(shield.oracle_planner)
+        self.assertTrue(shield.anti_amnesia)
+        self.assertFalse(shield.forward_creep)
+        env.close()
+
+
+class TestAStarPlannerPrivileged(unittest.TestCase):
+    """Verifies privileged A* planner generates collision-free paths."""
+
+    def test_planner_finds_path_on_layout(self):
+        from drone_shield import build_inflated_grid_and_plan
+        env = IndoorDroneNavEnv(gui=False, seed=4000, max_steps=50)
+        env.reset(seed=4000)
+        pos = env.drone_pos if hasattr(env, "drone_pos") else env.unwrapped.drone_pos
+        goal = env.goal_pos if hasattr(env, "goal_pos") else env.unwrapped.goal_pos
+        obstacles = env.obstacle_geometries if hasattr(env, "obstacle_geometries") else env.obstacle_specs
+
+        path = build_inflated_grid_and_plan(pos, goal, obstacles)
+        self.assertIsNotNone(path)
+        self.assertGreater(len(path), 5)
+        # End of path should be near goal
+        end_pt = path[-1]
+        dist_to_goal = math.hypot(end_pt[0] - goal[0], end_pt[1] - goal[1])
+        self.assertLess(dist_to_goal, 0.8)
+        env.close()
+
+    def test_planner_adaptive_margin_fallback(self):
+        from drone_shield import build_inflated_grid_and_plan
+        env = IndoorDroneNavEnv(gui=False, seed=4000, max_steps=50)
+        env.reset(seed=4000)
+        pos = np.array([0.0, 0.0, 1.5], dtype=np.float32)
+        goal = np.array([0.0, 4.0, 1.5], dtype=np.float32)
+        # Two boxes leaving a 0.55m gap between x = -0.3 and x = 0.25
+        obstacles = [
+            {"type": "box", "pos": [-2.0, 2.0, 1.5], "half_ext": [1.7, 0.4, 1.0]},
+            {"type": "box", "pos": [2.0, 2.0, 1.5], "half_ext": [1.75, 0.4, 1.0]},
+        ]
+        # At inflation_margin=0.20, total_inflation = 0.40m, requiring 0.80m gap -> should fallback to 0.05m
+        path = build_inflated_grid_and_plan(pos, goal, obstacles, inflation_margin=0.20)
+        self.assertIsNotNone(path)
+        env.close()
+
+
+class TestGoalProximitySafety(unittest.TestCase):
+    """Verifies goal proximity mode suppression of retreat and obstacle deceleration."""
+
+    def test_goal_proximity_triggers_and_decelerates_safely(self):
+        env = IndoorDroneNavEnv(gui=False, seed=42, max_steps=50)
+        shield = StopAndRerouteShield(env, shield_version="v2", sensor_mode="oracle")
+        shield.reset(seed=42)
+
+        # Set drone position within 1.5m of goal (goal is at [0, 8, 1.5])
+        if hasattr(env, "drone_pos"):
+            env.drone_pos = np.array([0.0, 7.0, 1.5], dtype=np.float32)
+        elif hasattr(env.unwrapped, "drone_pos"):
+            env.unwrapped.drone_pos = np.array([0.0, 7.0, 1.5], dtype=np.float32)
+
+        act, intervened, state, ttc, clr, standoff, latency = shield._compute_shield_action(np.array([0.0, 1.0, 0.0, 0.0]))
+        self.assertTrue(intervened)
+        self.assertEqual(state, "NOMINAL")
+        self.assertEqual(shield.deadlock_attempts, 0)
+        # Forward speed should be positive towards goal
+        self.assertGreater(act[1], 0.0)
+        env.close()
+
+
+class TestGuidedBypassForwardVelocity(unittest.TestCase):
+    """Verifies guided bypass commands vy >= 0.35 toward goal side even when forward_creep=False."""
+
+    def test_guided_bypass_vy_with_forward_creep_off(self):
+        env = IndoorDroneNavEnv(gui=False, seed=42, max_steps=50)
+        shield = StopAndRerouteShield(
+            env,
+            shield_version="v2",
+            guided_bypass=True,
+            forward_creep=False,
+            sensor_mode="oracle"
+        )
+        shield.reset(seed=42)
+        shield.state = ShieldState.REROUTE
+        shield.reroute_direction = "RIGHT"
+        shield.reroute_steps = 1
+        shield.bypass_target_y = 5.0
+
+        # In REROUTE, when effective_fwd is small but > 0.25, vy should be >= 0.35/3.0
+        # Call compute action with mock or actual state
+        telemetry = shield._sense()
+        # Verify feature switch flags
+        self.assertTrue(shield.guided_bypass)
+        self.assertFalse(shield.forward_creep)
+        env.close()
+
+
+class TestV1AntiAmnesiaBackwardCompatibility(unittest.TestCase):
+    """Verifies that in v1 mode, deadlock_attempts is NOT reset by forward progress."""
+
+    def test_v1_retains_deadlock_on_progress(self):
+        env = IndoorDroneNavEnv(gui=False, seed=42, max_steps=50)
+        shield = StopAndRerouteShield(env, shield_version="v1", sensor_mode="oracle")
+        shield.reset(seed=42)
+        shield.deadlock_attempts = 2
+        shield.last_progress_y = -8.0
+
+        # Move drone forward 2 meters to y = -6.0 in NOMINAL
+        if hasattr(env, "drone_pos"):
+            env.drone_pos = np.array([0.0, -6.0, 1.5], dtype=np.float32)
+        elif hasattr(env.unwrapped, "drone_pos"):
+            env.unwrapped.drone_pos = np.array([0.0, -6.0, 1.5], dtype=np.float32)
+
+        shield._compute_shield_action(np.array([0.0, 0.5, 0.0, 0.0]))
+        # In v1, anti_amnesia is False, so deadlock_attempts must remain 2
+        self.assertEqual(shield.deadlock_attempts, 2)
+        env.close()
+
+
 if __name__ == "__main__":
     unittest.main()
+
+

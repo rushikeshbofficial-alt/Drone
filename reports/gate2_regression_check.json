@@ -1,0 +1,464 @@
+{
+  "title": "Gate 2 Regression Check (45 v1-Succeeding Episodes under v2)",
+  "num_episodes": 45,
+  "regressions_count": 0,
+  "collisions_count": 0,
+  "mean_step_overhead_pct": -2.22,
+  "median_step_overhead_pct": 1.48,
+  "std_step_overhead_pct": 17.06,
+  "min_step_overhead_pct": -40.49,
+  "max_step_overhead_pct": 55.03,
+  "regressed_seeds": [],
+  "details": [
+    {
+      "seed": 4001,
+      "v1_steps": 208,
+      "v2_steps": 217,
+      "step_diff": 9,
+      "overhead_pct": 4.33,
+      "v2_outcome": "SUCCESS",
+      "v1_reward": -152.91,
+      "v2_reward": -133.76
+    },
+    {
+      "seed": 4002,
+      "v1_steps": 274,
+      "v2_steps": 220,
+      "step_diff": -54,
+      "overhead_pct": -19.71,
+      "v2_outcome": "SUCCESS",
+      "v1_reward": -24.41,
+      "v2_reward": -191.78
+    },
+    {
+      "seed": 4003,
+      "v1_steps": 174,
+      "v2_steps": 185,
+      "step_diff": 11,
+      "overhead_pct": 6.32,
+      "v2_outcome": "SUCCESS",
+      "v1_reward": 81.27,
+      "v2_reward": 81.17
+    },
+    {
+      "seed": 4004,
+      "v1_steps": 225,
+      "v2_steps": 242,
+      "step_diff": 17,
+      "overhead_pct": 7.56,
+      "v2_outcome": "SUCCESS",
+      "v1_reward": -94.0,
+      "v2_reward": -88.87
+    },
+    {
+      "seed": 4005,
+      "v1_steps": 296,
+      "v2_steps": 313,
+      "step_diff": 17,
+      "overhead_pct": 5.74,
+      "v2_outcome": "SUCCESS",
+      "v1_reward": -142.17,
+      "v2_reward": -152.32
+    },
+    {
+      "seed": 4006,
+      "v1_steps": 428,
+      "v2_steps": 342,
+      "step_diff": -86,
+      "overhead_pct": -20.09,
+      "v2_outcome": "SUCCESS",
+      "v1_reward": -675.36,
+      "v2_reward": -520.59
+    },
+    {
+      "seed": 4007,
+      "v1_steps": 368,
+      "v2_steps": 219,
+      "step_diff": -149,
+      "overhead_pct": -40.49,
+      "v2_outcome": "SUCCESS",
+      "v1_reward": -846.81,
+      "v2_reward": -328.06
+    },
+    {
+      "seed": 4008,
+      "v1_steps": 324,
+      "v2_steps": 269,
+      "step_diff": -55,
+      "overhead_pct": -16.98,
+      "v2_outcome": "SUCCESS",
+      "v1_reward": -430.03,
+      "v2_reward": -246.57
+    },
+    {
+      "seed": 4009,
+      "v1_steps": 206,
+      "v2_steps": 230,
+      "step_diff": 24,
+      "overhead_pct": 11.65,
+      "v2_outcome": "SUCCESS",
+      "v1_reward": 18.1,
+      "v2_reward": -94.0
+    },
+    {
+      "seed": 4010,
+      "v1_steps": 173,
+      "v2_steps": 184,
+      "step_diff": 11,
+      "overhead_pct": 6.36,
+      "v2_outcome": "SUCCESS",
+      "v1_reward": 87.51,
+      "v2_reward": 90.07
+    },
+    {
+      "seed": 4011,
+      "v1_steps": 207,
+      "v2_steps": 200,
+      "step_diff": -7,
+      "overhead_pct": -3.38,
+      "v2_outcome": "SUCCESS",
+      "v1_reward": -110.91,
+      "v2_reward": -8.67
+    },
+    {
+      "seed": 4012,
+      "v1_steps": 224,
+      "v2_steps": 284,
+      "step_diff": 60,
+      "overhead_pct": 26.79,
+      "v2_outcome": "SUCCESS",
+      "v1_reward": -291.62,
+      "v2_reward": -443.85
+    },
+    {
+      "seed": 4013,
+      "v1_steps": 178,
+      "v2_steps": 183,
+      "step_diff": 5,
+      "overhead_pct": 2.81,
+      "v2_outcome": "SUCCESS",
+      "v1_reward": 54.39,
+      "v2_reward": 86.67
+    },
+    {
+      "seed": 4014,
+      "v1_steps": 281,
+      "v2_steps": 218,
+      "step_diff": -63,
+      "overhead_pct": -22.42,
+      "v2_outcome": "SUCCESS",
+      "v1_reward": -266.76,
+      "v2_reward": -62.8
+    },
+    {
+      "seed": 4016,
+      "v1_steps": 291,
+      "v2_steps": 267,
+      "step_diff": -24,
+      "overhead_pct": -8.25,
+      "v2_outcome": "SUCCESS",
+      "v1_reward": -527.03,
+      "v2_reward": -276.61
+    },
+    {
+      "seed": 4017,
+      "v1_steps": 244,
+      "v2_steps": 244,
+      "step_diff": 0,
+      "overhead_pct": 0.0,
+      "v2_outcome": "SUCCESS",
+      "v1_reward": -20.39,
+      "v2_reward": -69.6
+    },
+    {
+      "seed": 4019,
+      "v1_steps": 169,
+      "v2_steps": 200,
+      "step_diff": 31,
+      "overhead_pct": 18.34,
+      "v2_outcome": "SUCCESS",
+      "v1_reward": 190.03,
+      "v2_reward": 192.16
+    },
+    {
+      "seed": 4022,
+      "v1_steps": 298,
+      "v2_steps": 256,
+      "step_diff": -42,
+      "overhead_pct": -14.09,
+      "v2_outcome": "SUCCESS",
+      "v1_reward": -476.67,
+      "v2_reward": -364.11
+    },
+    {
+      "seed": 4025,
+      "v1_steps": 369,
+      "v2_steps": 292,
+      "step_diff": -77,
+      "overhead_pct": -20.87,
+      "v2_outcome": "SUCCESS",
+      "v1_reward": -1021.69,
+      "v2_reward": -535.06
+    },
+    {
+      "seed": 4027,
+      "v1_steps": 189,
+      "v2_steps": 293,
+      "step_diff": 104,
+      "overhead_pct": 55.03,
+      "v2_outcome": "SUCCESS",
+      "v1_reward": -48.59,
+      "v2_reward": -458.87
+    },
+    {
+      "seed": 4028,
+      "v1_steps": 226,
+      "v2_steps": 241,
+      "step_diff": 15,
+      "overhead_pct": 6.64,
+      "v2_outcome": "SUCCESS",
+      "v1_reward": -267.25,
+      "v2_reward": -268.13
+    },
+    {
+      "seed": 4029,
+      "v1_steps": 310,
+      "v2_steps": 239,
+      "step_diff": -71,
+      "overhead_pct": -22.9,
+      "v2_outcome": "SUCCESS",
+      "v1_reward": -426.14,
+      "v2_reward": -33.15
+    },
+    {
+      "seed": 4030,
+      "v1_steps": 284,
+      "v2_steps": 235,
+      "step_diff": -49,
+      "overhead_pct": -17.25,
+      "v2_outcome": "SUCCESS",
+      "v1_reward": -46.26,
+      "v2_reward": 5.95
+    },
+    {
+      "seed": 4031,
+      "v1_steps": 384,
+      "v2_steps": 231,
+      "step_diff": -153,
+      "overhead_pct": -39.84,
+      "v2_outcome": "SUCCESS",
+      "v1_reward": -869.97,
+      "v2_reward": -173.56
+    },
+    {
+      "seed": 4032,
+      "v1_steps": 166,
+      "v2_steps": 178,
+      "step_diff": 12,
+      "overhead_pct": 7.23,
+      "v2_outcome": "SUCCESS",
+      "v1_reward": 107.67,
+      "v2_reward": 110.02
+    },
+    {
+      "seed": 4033,
+      "v1_steps": 171,
+      "v2_steps": 183,
+      "step_diff": 12,
+      "overhead_pct": 7.02,
+      "v2_outcome": "SUCCESS",
+      "v1_reward": 65.31,
+      "v2_reward": 64.66
+    },
+    {
+      "seed": 4034,
+      "v1_steps": 189,
+      "v2_steps": 202,
+      "step_diff": 13,
+      "overhead_pct": 6.88,
+      "v2_outcome": "SUCCESS",
+      "v1_reward": -5.44,
+      "v2_reward": -18.2
+    },
+    {
+      "seed": 4035,
+      "v1_steps": 158,
+      "v2_steps": 186,
+      "step_diff": 28,
+      "overhead_pct": 17.72,
+      "v2_outcome": "SUCCESS",
+      "v1_reward": 156.24,
+      "v2_reward": 65.73
+    },
+    {
+      "seed": 4037,
+      "v1_steps": 235,
+      "v2_steps": 247,
+      "step_diff": 12,
+      "overhead_pct": 5.11,
+      "v2_outcome": "SUCCESS",
+      "v1_reward": -137.28,
+      "v2_reward": -140.82
+    },
+    {
+      "seed": 4038,
+      "v1_steps": 276,
+      "v2_steps": 246,
+      "step_diff": -30,
+      "overhead_pct": -10.87,
+      "v2_outcome": "SUCCESS",
+      "v1_reward": -169.77,
+      "v2_reward": -185.15
+    },
+    {
+      "seed": 4039,
+      "v1_steps": 203,
+      "v2_steps": 206,
+      "step_diff": 3,
+      "overhead_pct": 1.48,
+      "v2_outcome": "SUCCESS",
+      "v1_reward": -8.81,
+      "v2_reward": 3.17
+    },
+    {
+      "seed": 4040,
+      "v1_steps": 194,
+      "v2_steps": 205,
+      "step_diff": 11,
+      "overhead_pct": 5.67,
+      "v2_outcome": "SUCCESS",
+      "v1_reward": 27.34,
+      "v2_reward": 25.44
+    },
+    {
+      "seed": 4041,
+      "v1_steps": 261,
+      "v2_steps": 267,
+      "step_diff": 6,
+      "overhead_pct": 2.3,
+      "v2_outcome": "SUCCESS",
+      "v1_reward": -316.52,
+      "v2_reward": -311.94
+    },
+    {
+      "seed": 4042,
+      "v1_steps": 216,
+      "v2_steps": 222,
+      "step_diff": 6,
+      "overhead_pct": 2.78,
+      "v2_outcome": "SUCCESS",
+      "v1_reward": -212.42,
+      "v2_reward": -203.24
+    },
+    {
+      "seed": 4043,
+      "v1_steps": 233,
+      "v2_steps": 278,
+      "step_diff": 45,
+      "overhead_pct": 19.31,
+      "v2_outcome": "SUCCESS",
+      "v1_reward": 43.99,
+      "v2_reward": -44.15
+    },
+    {
+      "seed": 4044,
+      "v1_steps": 231,
+      "v2_steps": 187,
+      "step_diff": -44,
+      "overhead_pct": -19.05,
+      "v2_outcome": "SUCCESS",
+      "v1_reward": -153.78,
+      "v2_reward": 28.62
+    },
+    {
+      "seed": 4045,
+      "v1_steps": 233,
+      "v2_steps": 228,
+      "step_diff": -5,
+      "overhead_pct": -2.15,
+      "v2_outcome": "SUCCESS",
+      "v1_reward": -140.67,
+      "v2_reward": -99.03
+    },
+    {
+      "seed": 4046,
+      "v1_steps": 196,
+      "v2_steps": 208,
+      "step_diff": 12,
+      "overhead_pct": 6.12,
+      "v2_outcome": "SUCCESS",
+      "v1_reward": -157.11,
+      "v2_reward": -227.3
+    },
+    {
+      "seed": 4047,
+      "v1_steps": 243,
+      "v2_steps": 205,
+      "step_diff": -38,
+      "overhead_pct": -15.64,
+      "v2_outcome": "SUCCESS",
+      "v1_reward": -125.07,
+      "v2_reward": 5.98
+    },
+    {
+      "seed": 4050,
+      "v1_steps": 317,
+      "v2_steps": 303,
+      "step_diff": -14,
+      "overhead_pct": -4.42,
+      "v2_outcome": "SUCCESS",
+      "v1_reward": -843.91,
+      "v2_reward": -733.24
+    },
+    {
+      "seed": 4051,
+      "v1_steps": 243,
+      "v2_steps": 259,
+      "step_diff": 16,
+      "overhead_pct": 6.58,
+      "v2_outcome": "SUCCESS",
+      "v1_reward": -241.79,
+      "v2_reward": -239.45
+    },
+    {
+      "seed": 4054,
+      "v1_steps": 235,
+      "v2_steps": 238,
+      "step_diff": 3,
+      "overhead_pct": 1.28,
+      "v2_outcome": "SUCCESS",
+      "v1_reward": -56.26,
+      "v2_reward": -22.41
+    },
+    {
+      "seed": 4057,
+      "v1_steps": 173,
+      "v2_steps": 167,
+      "step_diff": -6,
+      "overhead_pct": -3.47,
+      "v2_outcome": "SUCCESS",
+      "v1_reward": 58.8,
+      "v2_reward": 165.14
+    },
+    {
+      "seed": 4058,
+      "v1_steps": 320,
+      "v2_steps": 259,
+      "step_diff": -61,
+      "overhead_pct": -19.06,
+      "v2_outcome": "SUCCESS",
+      "v1_reward": -585.79,
+      "v2_reward": -198.91
+    },
+    {
+      "seed": 4059,
+      "v1_steps": 287,
+      "v2_steps": 230,
+      "step_diff": -57,
+      "overhead_pct": -19.86,
+      "v2_outcome": "SUCCESS",
+      "v1_reward": -448.84,
+      "v2_reward": -253.71
+    }
+  ]
+}

@@ -430,7 +430,7 @@ def evaluate_configuration(
     latencies = [ep["stop_latency"] for ep in episodes if ep["stop_latency"] > 0]
 
     # Aggregate state counts
-    agg_states = {"NOMINAL": 0, "BRAKE": 0, "SCAN": 0, "REROUTE": 0, "RETREAT": 0, "DISABLED": 0}
+    agg_states = {"NOMINAL": 0, "BRAKE": 0, "SCAN": 0, "REROUTE": 0, "RETREAT": 0, "PLANNER": 0, "DISABLED": 0}
     total_steps_all = sum(steps_list)
     for ep in episodes:
         for st, cnt in ep["state_counts"].items():
@@ -723,17 +723,33 @@ def main():
                         help="Base output filename for reports/ (defaults based on mode/seeds)")
 
     # Shield parameter overrides for tuning
+    parser.add_argument("--shield-version", type=str, default="v2", choices=["v1", "v2"],
+                        help="Shield version to evaluate: 'v1' or 'v2' (default: 'v2')")
     parser.add_argument("--t-brake", type=float, default=None, help="Override shield t_brake")
     parser.add_argument("--d-min", type=float, default=None, help="Override shield d_min")
     parser.add_argument("--d-safe", type=float, default=None, help="Override shield d_safe")
     parser.add_argument("--v-reroute", type=float, default=None, help="Override shield v_reroute")
+
+    # Feature switches for ablation
+    parser.add_argument("--guided-bypass", type=lambda x: (str(x).lower() == 'true'), default=None,
+                        help="Override guided bypass hand-back (True/False)")
+    parser.add_argument("--goal-proximity", type=lambda x: (str(x).lower() == 'true'), default=None,
+                        help="Override goal-proximity mode (True/False)")
+    parser.add_argument("--oracle-planner", type=lambda x: (str(x).lower() == 'true'), default=None,
+                        help="Override oracle A* path planner escalation (True/False)")
+    parser.add_argument("--anti-amnesia", type=lambda x: (str(x).lower() == 'true'), default=None,
+                        help="Override anti-amnesia deadlock retention (True/False)")
+    parser.add_argument("--forward-creep", type=lambda x: (str(x).lower() == 'true'), default=None,
+                        help="Override forward creep velocity setpoint (True/False)")
 
     args = parser.parse_args()
 
     seeds = parse_seeds(args.seeds)
 
     # Prepare shield kwargs
-    shield_kwargs = {}
+    shield_kwargs = {
+        "shield_version": args.shield_version,
+    }
     if args.t_brake is not None:
         shield_kwargs["t_brake"] = args.t_brake
     if args.d_min is not None:
@@ -742,6 +758,16 @@ def main():
         shield_kwargs["d_safe"] = args.d_safe
     if args.v_reroute is not None:
         shield_kwargs["v_reroute"] = args.v_reroute
+    if args.guided_bypass is not None:
+        shield_kwargs["guided_bypass"] = args.guided_bypass
+    if args.goal_proximity is not None:
+        shield_kwargs["goal_proximity"] = args.goal_proximity
+    if args.oracle_planner is not None:
+        shield_kwargs["oracle_planner"] = args.oracle_planner
+    if args.anti_amnesia is not None:
+        shield_kwargs["anti_amnesia"] = args.anti_amnesia
+    if args.forward_creep is not None:
+        shield_kwargs["forward_creep"] = args.forward_creep
 
     # Determine default report output name
     if args.output_name:

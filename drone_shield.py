@@ -23,6 +23,7 @@ Key Capabilities:
 """
 
 from enum import Enum
+import heapq
 import math
 from typing import Dict, List, Optional, Tuple, Any
 
@@ -38,6 +39,7 @@ class ShieldState(str, Enum):
     SCAN = "SCAN"
     REROUTE = "REROUTE"
     RETREAT = "RETREAT"
+    PLANNER = "PLANNER"
 
 
 # ── Geometric Raycasting Helpers (Analytical 2D in horizontal plane) ──────────
@@ -235,6 +237,213 @@ def point_obstacle_distance_2d(
     return float(min_dist)
 
 
+# ── Privileged Simulator Information: 2D Grid / A* Path Planner ───────────────
+
+def _plan_single_margin(
+    drone_pos: np.ndarray,
+    goal_pos: np.ndarray,
+    obstacles: List[Dict[str, Any]],
+    x_lim: float = 4.6,
+    y_lim: float = 9.6,
+    drone_radius: float = 0.20,
+    inflation_margin: float = 0.20,
+    grid_res: float = 0.15,
+) -> Optional[List[Tuple[float, float]]]:
+    total_inflation = drone_radius + inflation_margin
+
+    x_min, x_max = -x_lim + total_inflation, x_lim - total_inflation
+    y_min, y_max = -y_lim + total_inflation, y_lim - total_inflation
+
+    nx = int(math.ceil((x_max - x_min) / grid_res)) + 1
+    ny = int(math.ceil((y_max - y_min) / grid_res)) + 1
+
+    dyn_obs = []
+    for spec in obstacles:
+        pos = spec.get("pos", [0, 0, 0])
+        if abs(pos[0]) >= (x_lim - 0.2) or abs(pos[1]) >= (y_lim - 0.2):
+            continue
+        obs_type = spec.get("type", "box")
+        if obs_type == "cylinder":
+            dyn_obs.append(("cylinder", float(pos[0]), float(pos[1]), float(spec.get("radius", 0.4))))
+        else:
+            he = spec.get("half_ext", [0.4, 0.4, 0.4])
+            dyn_obs.append(("box", float(pos[0]), float(pos[1]), float(he[0]), float(he[1])))
+
+    def is_free(gx: float, gy: float) -> bool:
+        if gx < x_min or gx > x_max or gy < y_min or gy > y_max:
+            return False
+        for ob in dyn_obs:
+            if ob[0] == "cylinder":
+                cx, cy, r = ob[1], ob[2], ob[3]
+                if math.hypot(gx - cx, gy - cy) < (r + total_inflation):
+                    return False
+            else:
+                cx, cy, hx, hy = ob[1], ob[2], ob[3], ob[4]
+                if (abs(gx - cx) < (hx + total_inflation)) and (abs(gy - cy) < (hy + total_inflation)):
+                    return False
+        return True
+
+    def world_to_grid(wx: float, wy: float) -> Tuple[int, int]:
+        ix = int(round((wx - x_min) / grid_res))
+        iy = int(round((wy - y_min) / grid_res))
+        return max(0, min(nx - 1, ix)), max(0, min(ny - 1, iy))
+
+    def grid_to_world(ix: int, iy: int) -> Tuple[float, float]:
+        return x_min + ix * grid_res, y_min + iy * grid_res
+
+    start_cell = world_to_grid(float(drone_pos[0]), float(drone_pos[1]))
+    goal_cell = world_to_grid(float(goal_pos[0]), float(goal_pos[1]))
+
+    if not is_free(*grid_to_world(*start_cell)):
+        best_d = float("inf")
+        best_c = start_cell
+        for radius in range(1, 10):
+            found_r = False
+            for dx in range(-radius, radius + 1):
+                for dy in (-radius, radius):
+                    c = (max(0, min(nx - 1, start_cell[0] + dx)), max(0, min(ny - 1, start_cell[1] + dy)))
+                    wx, wy = grid_to_world(*c)
+                    if is_free(wx, wy):
+                        d = math.hypot(wx - drone_pos[0], wy - drone_pos[1])
+                        if d < best_d:
+                            best_d = d
+                            best_c = c
+                            found_r = True
+            for dy in range(-radius + 1, radius):
+                for dx in (-radius, radius):
+                    c = (max(0, min(nx - 1, start_cell[0] + dx)), max(0, min(ny - 1, start_cell[1] + dy)))
+                    wx, wy = grid_to_world(*c)
+                    if is_free(wx, wy):
+                        d = math.hypot(wx - drone_pos[0], wy - drone_pos[1])
+                        if d < best_d:
+                            best_d = d
+                            best_c = c
+                            found_r = True
+            if found_r:
+                break
+        start_cell = best_c
+
+    if not is_free(*grid_to_world(*goal_cell)):
+        best_d = float("inf")
+        best_c = goal_cell
+        for radius in range(1, 10):
+            found_r = False
+            for dx in range(-radius, radius + 1):
+                for dy in (-radius, radius):
+                    c = (max(0, min(nx - 1, goal_cell[0] + dx)), max(0, min(ny - 1, goal_cell[1] + dy)))
+                    wx, wy = grid_to_world(*c)
+                    if is_free(wx, wy):
+                        d = math.hypot(wx - goal_pos[0], wy - goal_pos[1])
+                        if d < best_d:
+                            best_d = d
+                            best_c = c
+                            found_r = True
+            for dy in range(-radius + 1, radius):
+                for dx in (-radius, radius):
+                    c = (max(0, min(nx - 1, goal_cell[0] + dx)), max(0, min(ny - 1, goal_cell[1] + dy)))
+                    wx, wy = grid_to_world(*c)
+                    if is_free(wx, wy):
+                        d = math.hypot(wx - goal_pos[0], wy - goal_pos[1])
+                        if d < best_d:
+                            best_d = d
+                            best_c = c
+                            found_r = True
+            if found_r:
+                break
+        goal_cell = best_c
+
+    open_set = []
+    heapq.heappush(open_set, (0.0, 0.0, start_cell))
+    came_from = {}
+    g_score = {start_cell: 0.0}
+
+    dirs = [
+        (1, 0, 1.0), (-1, 0, 1.0), (0, 1, 1.0), (0, -1, 1.0),
+        (1, 1, 1.414), (-1, 1, 1.414), (1, -1, 1.414), (-1, -1, 1.414)
+    ]
+    target_wx, target_wy = grid_to_world(*goal_cell)
+
+    found = False
+    while open_set:
+        _, cur_g, current = heapq.heappop(open_set)
+        if current == goal_cell:
+            found = True
+            break
+
+        for dx, dy, cost in dirs:
+            next_cell = (current[0] + dx, current[1] + dy)
+            if not (0 <= next_cell[0] < nx and 0 <= next_cell[1] < ny):
+                continue
+
+            n_wx, n_wy = grid_to_world(*next_cell)
+            if not is_free(n_wx, n_wy):
+                continue
+
+            if dx != 0 and dy != 0:
+                wx1, wy1 = grid_to_world(current[0] + dx, current[1])
+                wx2, wy2 = grid_to_world(current[0], current[1] + dy)
+                if not (is_free(wx1, wy1) or is_free(wx2, wy2)):
+                    continue
+
+            tentative_g = cur_g + cost * grid_res
+            if next_cell not in g_score or tentative_g < g_score[next_cell]:
+                came_from[next_cell] = current
+                g_score[next_cell] = tentative_g
+                h = math.hypot(n_wx - target_wx, n_wy - target_wy)
+                heapq.heappush(open_set, (tentative_g + h, tentative_g, next_cell))
+
+    if not found:
+        return None
+
+    path = []
+    curr = goal_cell
+    while curr in came_from:
+        path.append(grid_to_world(*curr))
+        curr = came_from[curr]
+    path.append(grid_to_world(*start_cell))
+    path.reverse()
+    return path
+
+
+def build_inflated_grid_and_plan(
+    drone_pos: np.ndarray,
+    goal_pos: np.ndarray,
+    obstacles: List[Dict[str, Any]],
+    x_lim: float = 4.6,
+    y_lim: float = 9.6,
+    drone_radius: float = 0.20,
+    inflation_margin: float = 0.20,
+    grid_res: float = 0.15,
+) -> Optional[List[Tuple[float, float]]]:
+    """
+    Computes a collision-free 2D path from drone_pos to goal_pos using A* on an inflated obstacle grid.
+
+    NOTE: This uses PRIVILEGED SIMULATOR INFORMATION (ground-truth geometric obstacle specs from PyBullet),
+    serving as the final escalation step in the SHR v2 safety shield when heuristic reactive bypass deadlocks.
+    Employs adaptive margin relaxation if tight passages are encountered.
+    """
+    margins = [inflation_margin]
+    if inflation_margin > 0.10:
+        margins.append(0.10)
+    if inflation_margin > 0.05:
+        margins.append(0.05)
+
+    for m in margins:
+        path = _plan_single_margin(
+            drone_pos=drone_pos,
+            goal_pos=goal_pos,
+            obstacles=obstacles,
+            x_lim=x_lim,
+            y_lim=y_lim,
+            drone_radius=drone_radius,
+            inflation_margin=m,
+            grid_res=grid_res,
+        )
+        if path is not None:
+            return path
+    return None
+
+
 # ── Stop, Hover & Re-Route (SHR) Safety Wrapper ──────────────────────────────
 
 class StopAndRerouteShield(gym.Wrapper):
@@ -265,6 +474,14 @@ class StopAndRerouteShield(gym.Wrapper):
         scan_w_goal: float = 1.2,
         scan_w_wall: float = 2.0,
         scan_w_history: float = 1.5,
+        shield_version: str = "v1",
+        guided_bypass: Optional[bool] = None,
+        goal_proximity: Optional[bool] = None,
+        oracle_planner: Optional[bool] = None,
+        anti_amnesia: Optional[bool] = None,
+        forward_creep: Optional[bool] = None,
+        planner_inflation_margin: float = 0.20,
+        planner_grid_res: float = 0.15,
         **kwargs,
     ):
         super().__init__(env)
@@ -291,6 +508,17 @@ class StopAndRerouteShield(gym.Wrapper):
         self.scan_w_wall = float(scan_w_wall)
         self.scan_w_history = float(scan_w_history)
 
+        # Shield version & v2 feature switches
+        self.shield_version = str(shield_version).lower()
+        is_v2 = (self.shield_version == "v2")
+        self.guided_bypass = bool(guided_bypass) if guided_bypass is not None else is_v2
+        self.goal_proximity = bool(goal_proximity) if goal_proximity is not None else is_v2
+        self.oracle_planner = bool(oracle_planner) if oracle_planner is not None else is_v2
+        self.anti_amnesia = bool(anti_amnesia) if anti_amnesia is not None else is_v2
+        self.forward_creep = bool(forward_creep) if forward_creep is not None else is_v2
+        self.planner_inflation_margin = float(planner_inflation_margin)
+        self.planner_grid_res = float(planner_grid_res)
+
         # Arena bounds cache
         self.arena_x_lim = 4.6
         self.arena_y_lim = 9.6
@@ -316,6 +544,50 @@ class StopAndRerouteShield(gym.Wrapper):
         self.brake_start_step = 0
         self.current_step = 0
         self.last_reroute_dir: Optional[str] = None
+
+        # v2 Tracking State
+        self.bypass_target_y: Optional[float] = None
+        self.bypass_clear_consecutive: int = 0
+        self.planned_path: Optional[List[Tuple[float, float]]] = None
+        self.plan_idx: int = 0
+        drone_pos = self._get_drone_pos()
+        self.planner_start_y = float(drone_pos[1])
+        self.last_progress_y = float(drone_pos[1])
+
+    def _find_blocking_obstacle(self, pos: np.ndarray) -> Optional[float]:
+        """
+        Finds the far edge y of the closest obstacle in front of the drone.
+        Used by guided bypass to retain control until the obstacle is passed.
+        """
+        obstacles = self._get_obstacle_specs()
+        x0, y0 = float(pos[0]), float(pos[1])
+        closest_y_far = None
+        min_front_dist = float("inf")
+
+        for ob in obstacles:
+            p = ob.get("pos", [0, 0, 0])
+            if abs(p[0]) >= (self.arena_x_lim - 0.2) or abs(p[1]) >= (self.arena_y_lim - 0.2):
+                continue
+            ob_type = ob.get("type", "box")
+            if ob_type == "cylinder":
+                r = float(ob.get("radius", 0.4))
+                y_front = p[1] - r
+                y_far = p[1] + r
+                hx = r
+            else:
+                he = ob.get("half_ext", [0.4, 0.4, 0.4])
+                y_front = p[1] - he[1]
+                y_far = p[1] + he[1]
+                hx = he[0]
+
+            if y_far > y0 and (y_front - y0) < 3.5:
+                if abs(p[0] - x0) <= (hx + self.body_radius + self.d_min + 0.35):
+                    dist_ahead = max(0.0, y_front - y0)
+                    if dist_ahead < min_front_dist:
+                        min_front_dist = dist_ahead
+                        closest_y_far = y_far
+
+        return closest_y_far
 
     # ── Environment Property Access Helpers ────────────────────────────────────
 
@@ -773,12 +1045,106 @@ class StopAndRerouteShield(gym.Wrapper):
         executed_action = policy_action.copy()
         intervened = False
 
+        # Forward progress tracking for anti_amnesia
+        if self.anti_amnesia and (pos[1] - self.last_progress_y >= 1.5):
+            self.deadlock_attempts = 0
+            self.last_progress_y = float(pos[1])
+
+        # Goal proximity check
+        goal = self._get_goal_pos()
+        dist_goal = float(math.hypot(pos[0] - goal[0], pos[1] - goal[1]))
+        in_goal_proximity = (self.goal_proximity and dist_goal <= 1.6)
+
         # Decrement cooldown counter if active
         if self.cooldown_counter > 0:
             self.cooldown_counter -= 1
 
         # Check trigger: fires if (ttc < t_brake) OR (clearance < d_min) OR (omni_clearance < d_min)
         trigger_fired = (ttc < self.t_brake) or (clearance < self.d_min) or (telemetry.get("omni_clearance", float("inf")) < self.d_min)
+
+        # ── GOAL PROXIMITY MODE OVERRIDE ───────────────────────────────────────
+        if in_goal_proximity:
+            intervened = True
+            self.state = ShieldState.NOMINAL
+            self.deadlock_attempts = 0
+            u_g = telemetry["u_goal"]
+            clr_along_path = min(clearance, telemetry.get("goal_clearance", clearance))
+            if clr_along_path > self.d_safe:
+                v_app = 1.0
+            elif clr_along_path > 0.20:
+                v_app = min(0.8, math.sqrt(2.0 * self.a_dec * max(0.0, clr_along_path - 0.20)))
+            else:
+                v_app = 0.0
+            vx_cmd = u_g[0] * v_app
+            vy_cmd = u_g[1] * v_app
+            current_z = float(pos[2])
+            vz_cmd = float(np.clip(2.0 * (self.target_altitude - current_z), -1.0, 1.0))
+            raw_act = np.clip(np.array([vx_cmd / 3.0, vy_cmd / 3.0, vz_cmd / 3.0, 0.0], dtype=np.float32), -1.0, 1.0)
+            return (raw_act, intervened, "NOMINAL", ttc, clearance, self.standoff_distance, self.stop_latency)
+
+        # ── ORACLE PLANNER ESCALATION STATE (PRIVILEGED SIMULATOR INFORMATION) ──
+        if self.state == ShieldState.PLANNER:
+            intervened = True
+            if self.planned_path is None or len(self.planned_path) == 0:
+                goal_pos_2d = self._get_goal_pos()[:2]
+                self.planned_path = build_inflated_grid_and_plan(
+                    pos, goal_pos_2d, self._get_obstacle_specs(),
+                    inflation_margin=self.planner_inflation_margin, grid_res=self.planner_grid_res
+                )
+                self.plan_idx = 0
+                self.planner_start_y = float(pos[1])
+
+            if self.planned_path is not None and len(self.planned_path) > 0:
+                # Advance target waypoint along path
+                while self.plan_idx < len(self.planned_path) - 1:
+                    wx, wy = self.planned_path[self.plan_idx]
+                    if math.hypot(wx - pos[0], wy - pos[1]) < 0.35:
+                        self.plan_idx += 1
+                    else:
+                        break
+
+                target_wpt = self.planned_path[min(self.plan_idx, len(self.planned_path) - 1)]
+                dx = target_wpt[0] - pos[0]
+                dy = target_wpt[1] - pos[1]
+                dist_wpt = math.hypot(dx, dy)
+                if dist_wpt > 1e-4:
+                    ux = dx / dist_wpt
+                    uy = dy / dist_wpt
+                else:
+                    ux, uy = 0.0, 1.0
+
+                v_track = 1.1
+                vx_cmd = ux * v_track
+                vy_cmd = uy * v_track
+
+                # Check clearance along exact trajectory
+                ray_dir = np.array([ux, uy], dtype=np.float32)
+                traj_clr = cast_ray_oracle(pos, ray_dir, self._get_obstacle_specs(), self.arena_x_lim, self.arena_y_lim, self.body_radius)
+                if traj_clr < self.d_min:
+                    scale = max(0.0, traj_clr - 0.20) / max(0.01, self.d_min - 0.20)
+                    vx_cmd *= scale
+                    vy_cmd *= scale
+
+                current_z = float(pos[2])
+                vz_cmd = float(np.clip(2.0 * (self.target_altitude - current_z), -1.0, 1.0))
+                executed_action = np.clip(np.array([vx_cmd / 3.0, vy_cmd / 3.0, vz_cmd / 3.0, 0.0], dtype=np.float32), -1.0, 1.0)
+
+                fwd_corr = telemetry.get("fwd_corridor_clearance", clearance)
+                if (
+                    (pos[1] - self.planner_start_y >= 2.0 or self.plan_idx >= len(self.planned_path) - 1)
+                    and fwd_corr >= (self.d_safe + 0.30)
+                    and clearance >= self.d_safe
+                ):
+                    self.state = ShieldState.NOMINAL
+                    self.planned_path = None
+                    self.cooldown_counter = self.cooldown_steps
+                    self.deadlock_attempts = 0
+
+                return (executed_action, intervened, ShieldState.PLANNER.value, ttc, clearance, self.standoff_distance, self.stop_latency)
+            else:
+                self.state = ShieldState.RETREAT
+                self.retreat_steps = 1
+                return self._compute_shield_action(policy_action)
 
         # ── STATE MACHINE DISPATCH ─────────────────────────────────────────────
 
@@ -829,7 +1195,11 @@ class StopAndRerouteShield(gym.Wrapper):
             d_wall_left = max(0.0, float(pos[0] - (-self.arena_x_lim) - self.body_radius))
             d_wall_right = max(0.0, float(self.arena_x_lim - pos[0] - self.body_radius))
 
-            if max_lat_clear < self.d_min and (d_wall_left < self.d_min or d_wall_right < self.d_min) and self.deadlock_attempts < 2:
+            if max_lat_clear < self.d_min and (d_wall_left < self.d_min or d_wall_right < self.d_min):
+                if self.oracle_planner and self.deadlock_attempts >= 2:
+                    self.state = ShieldState.PLANNER
+                    self.planned_path = None
+                    return self._compute_shield_action(policy_action)
                 # Corner-trapped: execute retreat fallback
                 self.state = ShieldState.RETREAT
                 self.retreat_steps = 1
@@ -841,6 +1211,15 @@ class StopAndRerouteShield(gym.Wrapper):
                 self.last_reroute_dir = chosen_dir
                 self.reroute_steps = 1
                 self.state = ShieldState.REROUTE
+
+                if self.guided_bypass:
+                    y_far = self._find_blocking_obstacle(pos)
+                    if y_far is not None:
+                        self.bypass_target_y = y_far + 0.30
+                    else:
+                        self.bypass_target_y = float(pos[1]) + 0.80
+                    self.bypass_clear_consecutive = 0
+
                 sign = -1.0 if self.reroute_direction == "LEFT" else 1.0
                 curr_lat_clear = left_c if chosen_dir == "LEFT" else right_c
                 d_wall_curr = d_wall_left if chosen_dir == "LEFT" else d_wall_right
@@ -864,8 +1243,13 @@ class StopAndRerouteShield(gym.Wrapper):
                     vy_cmd = min(1.5, math.sqrt(2.0 * self.a_dec * max(0.0, effective_fwd - self.d_min)))
                 elif effective_fwd > self.d_min:
                     vy_cmd = min(0.4, math.sqrt(2.0 * self.a_dec * max(0.0, effective_fwd - self.d_min)))
+                    if self.forward_creep or self.guided_bypass:
+                        vy_cmd = max(0.35, vy_cmd)
                 else:
-                    vy_cmd = 0.0
+                    if (self.forward_creep or self.guided_bypass) and effective_fwd > 0.25:
+                        vy_cmd = 0.35
+                    else:
+                        vy_cmd = 0.0
 
                 current_z = float(pos[2])
                 vz_cmd = float(np.clip(2.0 * (self.target_altitude - current_z), -1.0, 1.0))
@@ -892,6 +1276,11 @@ class StopAndRerouteShield(gym.Wrapper):
             # Max duration or lateral blockage fallback
             if is_max_steps or is_lateral_blocked:
                 self.deadlock_attempts += 1
+                if self.oracle_planner and self.deadlock_attempts >= 2:
+                    self.state = ShieldState.PLANNER
+                    self.planned_path = None
+                    return self._compute_shield_action(policy_action)
+
                 if is_max_steps or (self.deadlock_attempts >= 2 and rear_avail > self.d_min):
                     # Max steps exceeded or both directions blocked: execute retreat fallback
                     self.state = ShieldState.RETREAT
@@ -921,54 +1310,89 @@ class StopAndRerouteShield(gym.Wrapper):
                         vy_cmd = min(1.5, math.sqrt(2.0 * self.a_dec * max(0.0, effective_fwd - self.d_min)))
                     elif effective_fwd > self.d_min:
                         vy_cmd = min(0.4, math.sqrt(2.0 * self.a_dec * max(0.0, effective_fwd - self.d_min)))
+                        if self.forward_creep or self.guided_bypass:
+                            vy_cmd = max(0.35, vy_cmd)
                     else:
-                        vy_cmd = 0.0
+                        if (self.forward_creep or self.guided_bypass) and effective_fwd > 0.25:
+                            vy_cmd = 0.35
+                        else:
+                            vy_cmd = 0.0
 
                     current_z = float(pos[2])
                     vz_cmd = float(np.clip(2.0 * (self.target_altitude - current_z), -1.0, 1.0))
                     executed_action = np.array([vx_cmd / 3.0, vy_cmd / 3.0, vz_cmd / 3.0, 0.0], dtype=np.float32)
                     executed_action = np.clip(executed_action, -1.0, 1.0)
 
-            # Exit Condition: Corridor clearance is restored
-            elif (
-                self.reroute_steps >= self.min_reroute_steps
-                and (
-                    (u_g[1] >= 0.0 and effective_fwd >= (self.d_safe + 0.15) and clearance >= self.d_safe)
-                    or (u_g[1] < 0.0 and rear_avail >= (self.d_safe + 0.15))
-                )
-            ):
-                self.state = ShieldState.NOMINAL
-                self.cooldown_counter = self.cooldown_steps
-                self.deadlock_attempts = 0
-                gov_action, gov_interv = self._apply_speed_governor(policy_action, clearance, pos)
-                executed_action = gov_action
-                return (executed_action, gov_interv, self.state.value, ttc, clearance, self.standoff_distance, self.stop_latency)
+            # Exit Condition
             else:
-                # Active lateral flight with progression
-                sign = -1.0 if self.reroute_direction == "LEFT" else 1.0
-                if effective_lat_clear <= self.d_min:
-                    v_cap_lat = 0.0
+                if effective_fwd >= (self.d_safe + 0.15) and clearance >= self.d_safe:
+                    self.bypass_clear_consecutive += 1
                 else:
-                    v_cap_lat = min(self.v_reroute, math.sqrt(2.0 * self.a_dec * (effective_lat_clear - self.d_min)))
-                vx_cmd = sign * v_cap_lat
+                    self.bypass_clear_consecutive = 0
 
-                if u_g[1] < -0.1 and rear_avail > self.d_min:
-                    vy_cmd = -min(0.8, math.sqrt(2.0 * self.a_dec * max(0.0, rear_avail - self.d_min)))
-                elif effective_fwd > (self.d_safe + 0.20):
-                    vy_cmd = min(1.6, math.sqrt(2.0 * self.a_dec * max(0.0, effective_fwd - self.d_min)))
-                elif effective_fwd > self.d_min:
-                    vy_cmd = min(0.4, math.sqrt(2.0 * self.a_dec * max(0.0, effective_fwd - self.d_min)))
+                if not self.guided_bypass:
+                    can_exit = (
+                        self.reroute_steps >= self.min_reroute_steps
+                        and (
+                            (u_g[1] >= 0.0 and effective_fwd >= (self.d_safe + 0.15) and clearance >= self.d_safe)
+                            or (u_g[1] < 0.0 and rear_avail >= (self.d_safe + 0.15))
+                        )
+                    )
                 else:
-                    vy_cmd = 0.0
+                    passed_far_edge = (self.bypass_target_y is not None and pos[1] >= self.bypass_target_y)
+                    corridor_clear_run = (self.bypass_clear_consecutive >= 5 and effective_fwd >= 1.5)
+                    can_exit = (
+                        self.reroute_steps >= self.min_reroute_steps
+                        and effective_fwd >= (self.d_safe + 0.15)
+                        and clearance >= self.d_safe
+                        and (passed_far_edge or corridor_clear_run)
+                    )
 
-                current_z = float(pos[2])
-                vz_cmd = float(np.clip(2.0 * (self.target_altitude - current_z), -1.0, 1.0))
-                executed_action = np.array([vx_cmd / 3.0, vy_cmd / 3.0, vz_cmd / 3.0, 0.0], dtype=np.float32)
-                executed_action = np.clip(executed_action, -1.0, 1.0)
+                if can_exit:
+                    self.state = ShieldState.NOMINAL
+                    self.cooldown_counter = self.cooldown_steps
+                    if not self.anti_amnesia:
+                        self.deadlock_attempts = 0
+                    gov_action, gov_interv = self._apply_speed_governor(policy_action, clearance, pos)
+                    executed_action = gov_action
+                    return (executed_action, gov_interv, self.state.value, ttc, clearance, self.standoff_distance, self.stop_latency)
+                else:
+                    # Active lateral flight with progression
+                    sign = -1.0 if self.reroute_direction == "LEFT" else 1.0
+                    if effective_lat_clear <= self.d_min:
+                        v_cap_lat = 0.0
+                    else:
+                        v_cap_lat = min(self.v_reroute, math.sqrt(2.0 * self.a_dec * (effective_lat_clear - self.d_min)))
+                    vx_cmd = sign * v_cap_lat
+
+                    if u_g[1] < -0.1 and rear_avail > self.d_min:
+                        vy_cmd = -min(0.8, math.sqrt(2.0 * self.a_dec * max(0.0, rear_avail - self.d_min)))
+                    elif effective_fwd > (self.d_safe + 0.20):
+                        vy_cmd = min(1.6, math.sqrt(2.0 * self.a_dec * max(0.0, effective_fwd - self.d_min)))
+                    elif effective_fwd > self.d_min:
+                        vy_cmd = min(0.4, math.sqrt(2.0 * self.a_dec * max(0.0, effective_fwd - self.d_min)))
+                        if self.forward_creep or self.guided_bypass:
+                            vy_cmd = max(0.35, vy_cmd)
+                    else:
+                        if (self.forward_creep or self.guided_bypass) and effective_fwd > 0.25:
+                            vy_cmd = 0.35
+                        else:
+                            vy_cmd = 0.0
+
+                    current_z = float(pos[2])
+                    vz_cmd = float(np.clip(2.0 * (self.target_altitude - current_z), -1.0, 1.0))
+                    executed_action = np.array([vx_cmd / 3.0, vy_cmd / 3.0, vz_cmd / 3.0, 0.0], dtype=np.float32)
+                    executed_action = np.clip(executed_action, -1.0, 1.0)
 
         elif self.state == ShieldState.RETREAT:
             self.retreat_steps += 1
             intervened = True
+
+            # Check if planner escalation should trigger from retreat
+            if self.oracle_planner and self.deadlock_attempts >= 2 and self.retreat_steps >= 4:
+                self.state = ShieldState.PLANNER
+                self.planned_path = None
+                return self._compute_shield_action(policy_action)
 
             # Back up slightly (-Y) to build standoff distance
             current_z = float(pos[2])

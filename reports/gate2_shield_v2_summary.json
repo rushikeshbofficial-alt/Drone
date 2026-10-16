@@ -1,0 +1,50 @@
+{
+  "title": "Gate 2 Stop, Hover & Re-Route (SHR) Shield v2 Certification Report",
+  "timestamp": "2026-10-16T08:45:35Z",
+  "checkpoint": "best_model_baseline.pt",
+  "shield_version": "v2",
+  "tuning_seeds": {
+    "range": "4000-4029",
+    "episodes": 30,
+    "success_rate": "100.0% [88.6%, 100.0%] (30/30)",
+    "collision_rate": "  0.0% [ 0.0%, 11.4%] (0/30)",
+    "timeout_rate": "  0.0% [ 0.0%, 11.4%] (0/30)",
+    "mean_steps": 261.1,
+    "mean_reward": -256.73
+  },
+  "validation_seeds": {
+    "range": "4030-4059",
+    "episodes": 30,
+    "success_rate": "100.0% [88.6%, 100.0%] (30/30)",
+    "collision_rate": "  0.0% [ 0.0%, 11.4%] (0/30)",
+    "timeout_rate": "  0.0% [ 0.0%, 11.4%] (0/30)",
+    "mean_steps": 245.5,
+    "mean_reward": -185.13
+  },
+  "combined_seeds_4000_4059": {
+    "episodes": 60,
+    "success_count": 60,
+    "success_rate_pct": 100.0,
+    "collision_count": 0,
+    "collision_rate_pct": 0.0,
+    "timeout_count": 0,
+    "timeout_rate_pct": 0.0,
+    "mean_steps": 253.3,
+    "mean_reward": -220.93,
+    "mean_min_clearance": 0.34
+  },
+  "regression_check": {
+    "num_v1_success_episodes": 45,
+    "regressions_count": 0,
+    "collisions_count": 0,
+    "mean_step_overhead_pct": -2.22,
+    "median_step_overhead_pct": 1.48
+  },
+  "acceptance_criteria": {
+    "collisions_zero": true,
+    "timeouts_lte_8pct": true,
+    "success_gte_85pct": true,
+    "overhead_lte_15pct": true,
+    "overall_verdict": "PASSED"
+  }
+}
