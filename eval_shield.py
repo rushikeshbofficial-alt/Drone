@@ -73,16 +73,52 @@ def format_rate_with_ci(k: int, n: int) -> str:
 
 # ── Compute Lock Coordination ────────────────────────────────────────────────
 
+def is_pid_running(pid: int) -> bool:
+    try:
+        import psutil
+        return psutil.pid_exists(pid)
+    except Exception:
+        try:
+            os.kill(pid, 0)
+            return True
+        except OSError:
+            return False
+
+
 @contextmanager
 def acquire_compute_lock(lock_path: str = ".compute.lock", worker_id: str = "a3_benchmark_1", poll_interval: float = 1.0):
     """
     Enforces hardware compute lock coordination among workers.
-    Waits if .compute.lock exists, writes worker ID and PID upon entry,
-    and removes the lock in a finally block.
+    Waits if .compute.lock exists, detects and clears stale locks from terminated processes,
+    writes worker ID and PID upon entry, and removes the lock in a finally block.
     """
     pid = os.getpid()
     waited = False
     while os.path.exists(lock_path):
+        # Stale lock detection
+        stale = False
+        lock_pid = None
+        try:
+            with open(lock_path, "r", encoding="utf-8") as f:
+                content = f.read().strip()
+            parts = content.split()
+            for p in parts:
+                if p.isdigit():
+                    lock_pid = int(p)
+                    break
+            if lock_pid is not None and not is_pid_running(lock_pid):
+                stale = True
+        except Exception:
+            pass
+
+        if stale:
+            print(f"[!] Warning: Stale compute lock detected (PID {lock_pid} is not running). Removing stale lock '{lock_path}'.")
+            try:
+                os.remove(lock_path)
+            except OSError:
+                pass
+            break
+
         if not waited:
             print(f"[*] Compute lock active at '{lock_path}'. Waiting for release...")
             waited = True

@@ -335,10 +335,10 @@ python eval_shield.py --checkpoint best_model.pt --seeds 1000-1049 --compare
 #### Tactical C2 Interactive Dashboard (`evaluate_and_visualize.py`):
 ```bash
 # Launch live dashboard with Oracle Safety Shield:
-python evaluate_and_visualize.py --shield --shield-mode oracle --episodes 5
+python evaluate_and_visualize.py --shield --shield-mode oracle --eval-mode reference
 
 # Launch live dashboard with Camera-based Shield:
-python evaluate_and_visualize.py --shield --shield-mode camera --episodes 5
+python evaluate_and_visualize.py --shield --shield-mode camera --eval-mode reference
 ```
 
 #### DAgger Policy Distillation (`shield_dagger.py`):

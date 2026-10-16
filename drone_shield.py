@@ -251,8 +251,8 @@ class StopAndRerouteShield(gym.Wrapper):
         sensor_mode: str = "oracle",
         enabled: bool = True,
         t_brake: float = 0.28,
-        d_min: float = 0.35,
-        d_safe: float = 0.40,
+        d_min: float = 0.45,
+        d_safe: float = 0.55,
         a_dec: float = 4.5,
         v_reroute: float = 1.5,
         min_reroute_steps: int = 3,
@@ -410,37 +410,40 @@ class StopAndRerouteShield(gym.Wrapper):
         else:
             u_goal = np.array([0.0, 1.0], dtype=np.float32)
 
-        # Base forward direction: velocity vector if moving, else commanded velocity, else goal direction
+        # Base forward directions: check current velocity direction AND commanded policy velocity
+        dirs_to_check = []
         if speed_xy >= 0.1:
-            base_dir = np.array([vel[0] / speed_xy, vel[1] / speed_xy], dtype=np.float32)
-        elif speed_cmd >= 0.1:
-            base_dir = np.array([v_cmd[0] / speed_cmd, v_cmd[1] / speed_cmd], dtype=np.float32)
-        else:
-            base_dir = u_goal.copy()
-
-        base_angle = math.atan2(float(base_dir[1]), float(base_dir[0]))
+            dirs_to_check.append(np.array([vel[0] / speed_xy, vel[1] / speed_xy], dtype=np.float32))
+        if speed_cmd >= 0.1:
+            v_dir = np.array([v_cmd[0] / speed_cmd, v_cmd[1] / speed_cmd], dtype=np.float32)
+            if not dirs_to_check or float(np.dot(dirs_to_check[0], v_dir)) < 0.95:
+                dirs_to_check.append(v_dir)
+        if not dirs_to_check:
+            dirs_to_check.append(u_goal.copy())
 
         # 1. Forward Cone (+/- 30 degrees)
         cone_angles_deg = [-30.0, -20.0, -10.0, 0.0, 10.0, 20.0, 30.0]
         min_fwd_clearance = float("inf")
         min_fwd_ttc = float("inf")
 
-        for deg in cone_angles_deg:
-            ang = base_angle + math.radians(deg)
-            ray_d = np.array([math.cos(ang), math.sin(ang)], dtype=np.float32)
-            c = cast_ray_oracle(pos, ray_d, obstacles, x_lim, y_lim, self.body_radius)
-            if c < min_fwd_clearance:
-                min_fwd_clearance = c
+        for fwd_d in dirs_to_check:
+            base_angle = math.atan2(float(fwd_d[1]), float(fwd_d[0]))
+            for deg in cone_angles_deg:
+                ang = base_angle + math.radians(deg)
+                ray_d = np.array([math.cos(ang), math.sin(ang)], dtype=np.float32)
+                c = cast_ray_oracle(pos, ray_d, obstacles, x_lim, y_lim, self.body_radius)
+                if c < min_fwd_clearance:
+                    min_fwd_clearance = c
 
-            # Closing speed along this ray: maximum of current velocity and commanded velocity
-            spd_cur = float(vel[0] * ray_d[0] + vel[1] * ray_d[1])
-            spd_pol = float(v_cmd[0] * ray_d[0] + v_cmd[1] * ray_d[1])
-            closing_spd = max(0.0, spd_cur, spd_pol)
+                # Closing speed along this ray: maximum of current velocity and commanded velocity
+                spd_cur = float(vel[0] * ray_d[0] + vel[1] * ray_d[1])
+                spd_pol = float(v_cmd[0] * ray_d[0] + v_cmd[1] * ray_d[1])
+                closing_spd = max(0.0, spd_cur, spd_pol)
 
-            if closing_spd > 0.05:
-                ray_ttc = c / closing_spd
-                if ray_ttc < min_fwd_ttc:
-                    min_fwd_ttc = ray_ttc
+                if closing_spd > 0.05:
+                    ray_ttc = c / closing_spd
+                    if ray_ttc < min_fwd_ttc:
+                        min_fwd_ttc = ray_ttc
 
         # 2. Lateral directions in world frame (Left is -X, Right is +X)
         left_clearance = float("inf")
@@ -488,7 +491,7 @@ class StopAndRerouteShield(gym.Wrapper):
             "fwd_corridor_clearance": float(fwd_corridor_clearance),
             "omni_clearance": float(omni_clearance),
             "u_goal": u_goal,
-            "base_dir": base_dir,
+            "base_dir": dirs_to_check[0],
             "pos": pos,
             "vel": vel,
         }
@@ -759,6 +762,7 @@ class StopAndRerouteShield(gym.Wrapper):
         Returns:
             executed_action, intervened, shield_state, ttc, clearance, standoff_dist, stop_latency
         """
+        policy_action = np.nan_to_num(np.asarray(policy_action, dtype=np.float32), nan=0.0, posinf=1.0, neginf=-1.0)
         telemetry = self._sense(policy_action=policy_action)
         clearance = float(telemetry["clearance"])
         ttc = float(telemetry["ttc"])
@@ -773,8 +777,8 @@ class StopAndRerouteShield(gym.Wrapper):
         if self.cooldown_counter > 0:
             self.cooldown_counter -= 1
 
-        # Check trigger: fires if (ttc < t_brake) OR (clearance < d_min)
-        trigger_fired = (ttc < self.t_brake) or (clearance < self.d_min)
+        # Check trigger: fires if (ttc < t_brake) OR (clearance < d_min) OR (omni_clearance < d_min)
+        trigger_fired = (ttc < self.t_brake) or (clearance < self.d_min) or (telemetry.get("omni_clearance", float("inf")) < self.d_min)
 
         # ── STATE MACHINE DISPATCH ─────────────────────────────────────────────
 
@@ -838,9 +842,31 @@ class StopAndRerouteShield(gym.Wrapper):
                 self.reroute_steps = 1
                 self.state = ShieldState.REROUTE
                 sign = -1.0 if self.reroute_direction == "LEFT" else 1.0
-                vx_cmd = sign * min(self.v_reroute, 1.5)
+                curr_lat_clear = left_c if chosen_dir == "LEFT" else right_c
+                d_wall_curr = d_wall_left if chosen_dir == "LEFT" else d_wall_right
+                effective_lat_clear = min(curr_lat_clear, d_wall_curr)
+                if effective_lat_clear <= self.d_min:
+                    v_cap_lat = 0.0
+                else:
+                    v_cap_lat = min(self.v_reroute, math.sqrt(2.0 * self.a_dec * (effective_lat_clear - self.d_min)))
+                vx_cmd = sign * v_cap_lat
+
+                u_g = telemetry["u_goal"]
                 fwd_corr = telemetry.get("fwd_corridor_clearance", clearance)
-                vy_cmd = 1.5 if fwd_corr > (self.d_safe + 0.25) else 0.0
+                d_north = max(0.0, (self.arena_y_lim - self.body_radius) - pos[1])
+                effective_fwd = min(fwd_corr, d_north)
+                d_south = max(0.0, float(pos[1] - (-self.arena_y_lim) - self.body_radius))
+                rear_avail = min(telemetry["rear_clearance"], d_south)
+
+                if u_g[1] < -0.1 and rear_avail > self.d_min:
+                    vy_cmd = -min(0.8, math.sqrt(2.0 * self.a_dec * max(0.0, rear_avail - self.d_min)))
+                elif effective_fwd > (self.d_safe + 0.20):
+                    vy_cmd = min(1.5, math.sqrt(2.0 * self.a_dec * max(0.0, effective_fwd - self.d_min)))
+                elif effective_fwd > self.d_min:
+                    vy_cmd = min(0.4, math.sqrt(2.0 * self.a_dec * max(0.0, effective_fwd - self.d_min)))
+                else:
+                    vy_cmd = 0.0
+
                 current_z = float(pos[2])
                 vz_cmd = float(np.clip(2.0 * (self.target_altitude - current_z), -1.0, 1.0))
                 executed_action = np.array([vx_cmd / 3.0, vy_cmd / 3.0, vz_cmd / 3.0, 0.0], dtype=np.float32)
@@ -850,41 +876,66 @@ class StopAndRerouteShield(gym.Wrapper):
             self.reroute_steps += 1
             intervened = True
 
+            u_g = telemetry["u_goal"]
             fwd_corr = telemetry.get("fwd_corridor_clearance", clearance)
             curr_lat_clear = telemetry["left_clearance"] if self.reroute_direction == "LEFT" else telemetry["right_clearance"]
             d_wall_curr = (pos[0] - (-self.arena_x_lim) - self.body_radius) if self.reroute_direction == "LEFT" else (self.arena_x_lim - pos[0] - self.body_radius)
+            effective_lat_clear = min(curr_lat_clear, d_wall_curr)
+            d_north = max(0.0, (self.arena_y_lim - self.body_radius) - pos[1])
+            effective_fwd = min(fwd_corr, d_north)
+            d_south = max(0.0, float(pos[1] - (-self.arena_y_lim) - self.body_radius))
+            rear_avail = min(telemetry["rear_clearance"], d_south)
 
             is_max_steps = (self.reroute_steps >= self.max_reroute_steps)
-            is_lateral_blocked = (curr_lat_clear < self.d_min or d_wall_curr < 0.40)
+            is_lateral_blocked = (effective_lat_clear < self.d_min or d_wall_curr < self.d_min)
 
             # Max duration or lateral blockage fallback
             if is_max_steps or is_lateral_blocked:
                 self.deadlock_attempts += 1
-                if is_max_steps or (self.deadlock_attempts >= 2 and telemetry["rear_clearance"] > 0.40):
+                if is_max_steps or (self.deadlock_attempts >= 2 and rear_avail > self.d_min):
                     # Max steps exceeded or both directions blocked: execute retreat fallback
                     self.state = ShieldState.RETREAT
                     self.retreat_steps = 1
                     current_z = float(pos[2])
                     vz_cmd = float(np.clip(2.0 * (self.target_altitude - current_z), -1.0, 1.0))
-                    executed_action = np.array([0.0, -0.8 / 3.0, vz_cmd / 3.0, 0.0], dtype=np.float32)
+                    v_back = min(0.8, math.sqrt(2.0 * self.a_dec * max(0.0, rear_avail - self.d_min)))
+                    executed_action = np.array([0.0, -v_back / 3.0, vz_cmd / 3.0, 0.0], dtype=np.float32)
                 else:
                     # Lateral blockage on first attempt: try opposite direction directly
                     self.reroute_direction = "RIGHT" if self.reroute_direction == "LEFT" else "LEFT"
                     self.last_reroute_dir = self.reroute_direction
                     self.reroute_steps = 1
                     sign = -1.0 if self.reroute_direction == "LEFT" else 1.0
-                    vx_cmd = sign * min(self.v_reroute, 1.5)
-                    vy_cmd = 1.5 if fwd_corr > (self.d_safe + 0.20) else (0.4 if fwd_corr > self.d_min else 0.0)
+                    opp_lat_clear = telemetry["left_clearance"] if self.reroute_direction == "LEFT" else telemetry["right_clearance"]
+                    opp_d_wall = (pos[0] - (-self.arena_x_lim) - self.body_radius) if self.reroute_direction == "LEFT" else (self.arena_x_lim - pos[0] - self.body_radius)
+                    effective_opp = min(opp_lat_clear, opp_d_wall)
+                    if effective_opp <= self.d_min:
+                        v_cap_lat = 0.0
+                    else:
+                        v_cap_lat = min(self.v_reroute, math.sqrt(2.0 * self.a_dec * (effective_opp - self.d_min)))
+                    vx_cmd = sign * v_cap_lat
+
+                    if u_g[1] < -0.1 and rear_avail > self.d_min:
+                        vy_cmd = -min(0.8, math.sqrt(2.0 * self.a_dec * max(0.0, rear_avail - self.d_min)))
+                    elif effective_fwd > (self.d_safe + 0.20):
+                        vy_cmd = min(1.5, math.sqrt(2.0 * self.a_dec * max(0.0, effective_fwd - self.d_min)))
+                    elif effective_fwd > self.d_min:
+                        vy_cmd = min(0.4, math.sqrt(2.0 * self.a_dec * max(0.0, effective_fwd - self.d_min)))
+                    else:
+                        vy_cmd = 0.0
+
                     current_z = float(pos[2])
                     vz_cmd = float(np.clip(2.0 * (self.target_altitude - current_z), -1.0, 1.0))
                     executed_action = np.array([vx_cmd / 3.0, vy_cmd / 3.0, vz_cmd / 3.0, 0.0], dtype=np.float32)
                     executed_action = np.clip(executed_action, -1.0, 1.0)
 
-            # Exit Condition: Forward corridor clearance is restored (after at least min_reroute_steps)
+            # Exit Condition: Corridor clearance is restored
             elif (
                 self.reroute_steps >= self.min_reroute_steps
-                and fwd_corr >= (self.d_safe + 0.20)
-                and clearance >= self.d_safe
+                and (
+                    (u_g[1] >= 0.0 and effective_fwd >= (self.d_safe + 0.15) and clearance >= self.d_safe)
+                    or (u_g[1] < 0.0 and rear_avail >= (self.d_safe + 0.15))
+                )
             ):
                 self.state = ShieldState.NOMINAL
                 self.cooldown_counter = self.cooldown_steps
@@ -893,12 +944,23 @@ class StopAndRerouteShield(gym.Wrapper):
                 executed_action = gov_action
                 return (executed_action, gov_interv, self.state.value, ttc, clearance, self.standoff_distance, self.stop_latency)
             else:
-                # Active lateral flight with forward progression when corridor opens
+                # Active lateral flight with progression
                 sign = -1.0 if self.reroute_direction == "LEFT" else 1.0
-                v_cap_lat = min(self.v_reroute, math.sqrt(2.0 * self.a_dec * max(0.0, d_wall_curr - 0.20)))
-                vx_cmd = sign * max(0.6, v_cap_lat)
-                # If forward corridor has room, accelerate forward to clear obstacle fast!
-                vy_cmd = 1.6 if fwd_corr > (self.d_safe + 0.20) else (0.4 if fwd_corr > self.d_min else 0.0)
+                if effective_lat_clear <= self.d_min:
+                    v_cap_lat = 0.0
+                else:
+                    v_cap_lat = min(self.v_reroute, math.sqrt(2.0 * self.a_dec * (effective_lat_clear - self.d_min)))
+                vx_cmd = sign * v_cap_lat
+
+                if u_g[1] < -0.1 and rear_avail > self.d_min:
+                    vy_cmd = -min(0.8, math.sqrt(2.0 * self.a_dec * max(0.0, rear_avail - self.d_min)))
+                elif effective_fwd > (self.d_safe + 0.20):
+                    vy_cmd = min(1.6, math.sqrt(2.0 * self.a_dec * max(0.0, effective_fwd - self.d_min)))
+                elif effective_fwd > self.d_min:
+                    vy_cmd = min(0.4, math.sqrt(2.0 * self.a_dec * max(0.0, effective_fwd - self.d_min)))
+                else:
+                    vy_cmd = 0.0
+
                 current_z = float(pos[2])
                 vz_cmd = float(np.clip(2.0 * (self.target_altitude - current_z), -1.0, 1.0))
                 executed_action = np.array([vx_cmd / 3.0, vy_cmd / 3.0, vz_cmd / 3.0, 0.0], dtype=np.float32)
@@ -912,13 +974,17 @@ class StopAndRerouteShield(gym.Wrapper):
             current_z = float(pos[2])
             vz_cmd = float(np.clip(2.0 * (self.target_altitude - current_z), -1.0, 1.0))
 
-            if telemetry["rear_clearance"] > 0.40:
-                executed_action = np.array([0.0, -0.8 / 3.0, vz_cmd / 3.0, 0.0], dtype=np.float32)
+            d_south = max(0.0, pos[1] - (-self.arena_y_lim + self.body_radius))
+            effective_rear = min(telemetry["rear_clearance"], d_south)
+
+            if effective_rear > self.d_min:
+                v_back = min(0.8, math.sqrt(2.0 * self.a_dec * max(0.0, effective_rear - self.d_min)))
+                executed_action = np.array([0.0, -v_back / 3.0, vz_cmd / 3.0, 0.0], dtype=np.float32)
             else:
                 executed_action = np.zeros(4, dtype=np.float32)
 
             retreat_limit = 8 if self.deadlock_attempts > 1 else 6
-            if self.retreat_steps >= retreat_limit or telemetry["rear_clearance"] <= 0.35:
+            if self.retreat_steps >= retreat_limit or effective_rear <= self.d_min:
                 self.state = ShieldState.SCAN
 
         return (
@@ -955,7 +1021,8 @@ class StopAndRerouteShield(gym.Wrapper):
         Never alters observations, reward values, or termination conditions.
         """
         self.current_step += 1
-        policy_action = np.asarray(action, dtype=np.float32)
+        action = np.nan_to_num(np.asarray(action, dtype=np.float32), nan=0.0, posinf=1.0, neginf=-1.0)
+        policy_action = action
 
         if not self.enabled:
             obs, reward, terminated, truncated, info = self.env.step(policy_action)

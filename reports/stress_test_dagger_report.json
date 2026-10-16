@@ -1,0 +1,759 @@
+{
+  "timestamp": "2026-10-16T00:40:30Z",
+  "checkpoint": "best_model_dagger_v1.pt",
+  "pid": 9156,
+  "tests": {
+    "test_1_observation_fuzzing": {
+      "zero_tensor": {
+        "pass": true,
+        "action": [
+          0.0829,
+          0.8475,
+          0.0068,
+          0.0049
+        ],
+        "bounded": true,
+        "has_nan": false
+      },
+      "extreme_noise": {
+        "pass": true,
+        "trials": 100,
+        "bounded_pct": 100.0,
+        "has_nan": false
+      },
+      "extreme_velocity": {
+        "pass": true,
+        "trials": 100,
+        "bounded_pct": 100.0,
+        "has_nan": false
+      },
+      "nan_input_raw": {
+        "pass": false,
+        "crashed": false,
+        "output_nan": true,
+        "action": [
+          "nan",
+          "nan",
+          "nan",
+          "nan"
+        ]
+      },
+      "inf_input_raw": {
+        "pass": false,
+        "crashed": false,
+        "output_nan": true,
+        "action": [
+          "nan",
+          "nan",
+          "nan",
+          "nan"
+        ]
+      },
+      "sanitized_nan_input": {
+        "pass": true,
+        "action": [
+          0.0829,
+          0.8475,
+          0.0068,
+          0.0049
+        ],
+        "bounded": true,
+        "has_nan": false
+      },
+      "partial_nan_input": {
+        "pass": false,
+        "crashed": false,
+        "output_nan": true
+      },
+      "summary": "VULNERABILITY: Raw policy model lacks native input sanitization, allowing NaNs to propagate into motor commands unless guarded by inference pipeline."
+    },
+    "test_2_adversarial_oracle_shield": {
+      "head_on_impact_trials": [
+        {
+          "seed": 101,
+          "obs_type": "box",
+          "approach": 1.2,
+          "collided": false,
+          "stopped": true,
+          "standoff": 0.7779,
+          "pass": true
+        },
+        {
+          "seed": 101,
+          "obs_type": "box",
+          "approach": 1.8,
+          "collided": false,
+          "stopped": true,
+          "standoff": 0.7774,
+          "pass": true
+        },
+        {
+          "seed": 101,
+          "obs_type": "box",
+          "approach": 2.5,
+          "collided": false,
+          "stopped": true,
+          "standoff": 0.8177,
+          "pass": true
+        },
+        {
+          "seed": 101,
+          "obs_type": "box",
+          "approach": 3.2,
+          "collided": false,
+          "stopped": true,
+          "standoff": 0.7907,
+          "pass": true
+        },
+        {
+          "seed": 101,
+          "obs_type": "box",
+          "approach": 1.2,
+          "collided": false,
+          "stopped": true,
+          "standoff": 0.9436,
+          "pass": true
+        },
+        {
+          "seed": 101,
+          "obs_type": "box",
+          "approach": 1.8,
+          "collided": false,
+          "stopped": true,
+          "standoff": 0.9463,
+          "pass": true
+        },
+        {
+          "seed": 101,
+          "obs_type": "box",
+          "approach": 2.5,
+          "collided": false,
+          "stopped": true,
+          "standoff": 0.979,
+          "pass": true
+        },
+        {
+          "seed": 101,
+          "obs_type": "box",
+          "approach": 3.2,
+          "collided": false,
+          "stopped": true,
+          "standoff": 0.9571,
+          "pass": true
+        },
+        {
+          "seed": 202,
+          "obs_type": "box",
+          "approach": 1.2,
+          "collided": false,
+          "stopped": true,
+          "standoff": 0.9395,
+          "pass": true
+        },
+        {
+          "seed": 202,
+          "obs_type": "box",
+          "approach": 1.8,
+          "collided": false,
+          "stopped": true,
+          "standoff": 0.9474,
+          "pass": true
+        },
+        {
+          "seed": 202,
+          "obs_type": "box",
+          "approach": 2.5,
+          "collided": false,
+          "stopped": true,
+          "standoff": 0.9265,
+          "pass": true
+        },
+        {
+          "seed": 202,
+          "obs_type": "box",
+          "approach": 3.2,
+          "collided": false,
+          "stopped": true,
+          "standoff": 0.9055,
+          "pass": true
+        },
+        {
+          "seed": 202,
+          "obs_type": "cylinder",
+          "approach": 1.2,
+          "collided": false,
+          "stopped": true,
+          "standoff": 0.7779,
+          "pass": true
+        },
+        {
+          "seed": 202,
+          "obs_type": "cylinder",
+          "approach": 1.8,
+          "collided": false,
+          "stopped": true,
+          "standoff": 0.7774,
+          "pass": true
+        },
+        {
+          "seed": 202,
+          "obs_type": "cylinder",
+          "approach": 2.5,
+          "collided": false,
+          "stopped": true,
+          "standoff": 0.8177,
+          "pass": true
+        },
+        {
+          "seed": 202,
+          "obs_type": "cylinder",
+          "approach": 3.2,
+          "collided": false,
+          "stopped": true,
+          "standoff": 0.7907,
+          "pass": true
+        },
+        {
+          "seed": 303,
+          "obs_type": "cylinder",
+          "approach": 1.2,
+          "collided": false,
+          "stopped": true,
+          "standoff": 0.9745,
+          "pass": true
+        },
+        {
+          "seed": 303,
+          "obs_type": "cylinder",
+          "approach": 1.8,
+          "collided": false,
+          "stopped": true,
+          "standoff": 1.8,
+          "pass": true
+        },
+        {
+          "seed": 303,
+          "obs_type": "cylinder",
+          "approach": 1.2,
+          "collided": false,
+          "stopped": true,
+          "standoff": 1.2,
+          "pass": true
+        },
+        {
+          "seed": 303,
+          "obs_type": "cylinder",
+          "approach": 1.8,
+          "collided": false,
+          "stopped": true,
+          "standoff": 1.467,
+          "pass": true
+        },
+        {
+          "seed": 404,
+          "obs_type": "cylinder",
+          "approach": 1.2,
+          "collided": false,
+          "stopped": true,
+          "standoff": 0.7779,
+          "pass": true
+        },
+        {
+          "seed": 404,
+          "obs_type": "cylinder",
+          "approach": 1.8,
+          "collided": false,
+          "stopped": true,
+          "standoff": 0.7774,
+          "pass": true
+        },
+        {
+          "seed": 404,
+          "obs_type": "cylinder",
+          "approach": 2.5,
+          "collided": false,
+          "stopped": true,
+          "standoff": 0.8177,
+          "pass": true
+        },
+        {
+          "seed": 404,
+          "obs_type": "cylinder",
+          "approach": 3.2,
+          "collided": false,
+          "stopped": true,
+          "standoff": 0.7907,
+          "pass": true
+        },
+        {
+          "seed": 505,
+          "obs_type": "cylinder",
+          "approach": 1.2,
+          "collided": false,
+          "stopped": true,
+          "standoff": 0.7779,
+          "pass": true
+        },
+        {
+          "seed": 505,
+          "obs_type": "cylinder",
+          "approach": 1.8,
+          "collided": false,
+          "stopped": true,
+          "standoff": 0.7774,
+          "pass": true
+        },
+        {
+          "seed": 505,
+          "obs_type": "cylinder",
+          "approach": 2.5,
+          "collided": false,
+          "stopped": true,
+          "standoff": 0.8177,
+          "pass": true
+        },
+        {
+          "seed": 505,
+          "obs_type": "cylinder",
+          "approach": 3.2,
+          "collided": false,
+          "stopped": true,
+          "standoff": 0.7907,
+          "pass": true
+        },
+        {
+          "seed": 505,
+          "obs_type": "box",
+          "approach": 1.2,
+          "collided": false,
+          "stopped": true,
+          "standoff": 0.7779,
+          "pass": true
+        },
+        {
+          "seed": 505,
+          "obs_type": "box",
+          "approach": 1.8,
+          "collided": false,
+          "stopped": true,
+          "standoff": 0.7774,
+          "pass": true
+        },
+        {
+          "seed": 505,
+          "obs_type": "box",
+          "approach": 2.5,
+          "collided": false,
+          "stopped": true,
+          "standoff": 0.8177,
+          "pass": true
+        },
+        {
+          "seed": 505,
+          "obs_type": "box",
+          "approach": 3.2,
+          "collided": false,
+          "stopped": true,
+          "standoff": 0.7907,
+          "pass": true
+        },
+        {
+          "seed": 2000,
+          "obs_type": "cylinder",
+          "approach": 1.2,
+          "collided": false,
+          "stopped": true,
+          "standoff": 0.7779,
+          "pass": true
+        },
+        {
+          "seed": 2000,
+          "obs_type": "cylinder",
+          "approach": 1.8,
+          "collided": false,
+          "stopped": true,
+          "standoff": 0.7774,
+          "pass": true
+        },
+        {
+          "seed": 2000,
+          "obs_type": "cylinder",
+          "approach": 2.5,
+          "collided": false,
+          "stopped": true,
+          "standoff": 0.8177,
+          "pass": true
+        },
+        {
+          "seed": 2000,
+          "obs_type": "cylinder",
+          "approach": 3.2,
+          "collided": false,
+          "stopped": true,
+          "standoff": 0.7907,
+          "pass": true
+        },
+        {
+          "seed": 2000,
+          "obs_type": "box",
+          "approach": 1.2,
+          "collided": false,
+          "stopped": true,
+          "standoff": 0.7779,
+          "pass": true
+        },
+        {
+          "seed": 2000,
+          "obs_type": "box",
+          "approach": 1.8,
+          "collided": false,
+          "stopped": true,
+          "standoff": 0.7774,
+          "pass": true
+        },
+        {
+          "seed": 2000,
+          "obs_type": "box",
+          "approach": 2.5,
+          "collided": false,
+          "stopped": true,
+          "standoff": 0.8177,
+          "pass": true
+        },
+        {
+          "seed": 2000,
+          "obs_type": "box",
+          "approach": 3.2,
+          "collided": false,
+          "stopped": true,
+          "standoff": 0.7907,
+          "pass": true
+        },
+        {
+          "seed": 2005,
+          "obs_type": "box",
+          "approach": 1.2,
+          "collided": false,
+          "stopped": true,
+          "standoff": 0.7779,
+          "pass": true
+        },
+        {
+          "seed": 2005,
+          "obs_type": "box",
+          "approach": 1.8,
+          "collided": false,
+          "stopped": true,
+          "standoff": 0.7774,
+          "pass": true
+        },
+        {
+          "seed": 2005,
+          "obs_type": "box",
+          "approach": 2.5,
+          "collided": false,
+          "stopped": true,
+          "standoff": 0.8177,
+          "pass": true
+        },
+        {
+          "seed": 2005,
+          "obs_type": "box",
+          "approach": 3.2,
+          "collided": false,
+          "stopped": true,
+          "standoff": 0.7907,
+          "pass": true
+        },
+        {
+          "seed": 2005,
+          "obs_type": "cylinder",
+          "approach": 1.2,
+          "collided": false,
+          "stopped": true,
+          "standoff": 1.1326,
+          "pass": true
+        }
+      ],
+      "perimeter_wall_trials": [
+        {
+          "scenario": "East Wall (+X)",
+          "min_standoff": 0.6958,
+          "interventions": 32,
+          "oob": false,
+          "pass": true
+        },
+        {
+          "scenario": "West Wall (-X)",
+          "min_standoff": 0.8104,
+          "interventions": 35,
+          "oob": false,
+          "pass": true
+        },
+        {
+          "scenario": "North Wall (+Y)",
+          "min_standoff": 0.66,
+          "interventions": 20,
+          "oob": false,
+          "pass": true
+        },
+        {
+          "scenario": "South Wall (-Y)",
+          "min_standoff": 0.7402,
+          "interventions": 20,
+          "oob": false,
+          "pass": true
+        },
+        {
+          "scenario": "NE Corner (+X, +Y)",
+          "min_standoff": 0.669,
+          "interventions": 35,
+          "oob": false,
+          "pass": true
+        },
+        {
+          "scenario": "NW Corner (-X, +Y)",
+          "min_standoff": 0.669,
+          "interventions": 35,
+          "oob": false,
+          "pass": true
+        },
+        {
+          "scenario": "SE Corner (+X, -Y)",
+          "min_standoff": 0.7275,
+          "interventions": 35,
+          "oob": false,
+          "pass": true
+        },
+        {
+          "scenario": "SW Corner (-X, -Y)",
+          "min_standoff": 0.7275,
+          "interventions": 35,
+          "oob": false,
+          "pass": true
+        }
+      ],
+      "adversarial_injection_episodes": [
+        {
+          "seed": 101,
+          "steps": 100,
+          "hostile_injections": 77,
+          "interventions": 47,
+          "min_clearance": 0.5228,
+          "collided": false,
+          "pass": true
+        },
+        {
+          "seed": 202,
+          "steps": 100,
+          "hostile_injections": 85,
+          "interventions": 66,
+          "min_clearance": 0.5165,
+          "collided": false,
+          "pass": true
+        },
+        {
+          "seed": 303,
+          "steps": 100,
+          "hostile_injections": 66,
+          "interventions": 26,
+          "min_clearance": 0.7264,
+          "collided": false,
+          "pass": true
+        },
+        {
+          "seed": 404,
+          "steps": 100,
+          "hostile_injections": 75,
+          "interventions": 39,
+          "min_clearance": 0.7256,
+          "collided": false,
+          "pass": true
+        },
+        {
+          "seed": 505,
+          "steps": 100,
+          "hostile_injections": 76,
+          "interventions": 56,
+          "min_clearance": 0.4576,
+          "collided": false,
+          "pass": true
+        }
+      ],
+      "all_intervened": true,
+      "zero_collisions": true,
+      "min_standoff": 0.4576,
+      "pass": true
+    },
+    "test_3_altitude_hold_resilience": {
+      "downward_descent_tests": [
+        {
+          "scenario": "Nominal Start (z=1.5m)",
+          "start_z": 1.5,
+          "min_z": 1.0442,
+          "final_z": 1.0443,
+          "interventions": 80,
+          "oob": false,
+          "pass": true
+        },
+        {
+          "scenario": "Low Altitude Start (z=0.60m)",
+          "start_z": 0.6,
+          "min_z": 0.675,
+          "final_z": 1.0487,
+          "interventions": 50,
+          "oob": false,
+          "pass": true
+        },
+        {
+          "scenario": "Floor Proximity Threshold (z=0.40m)",
+          "start_z": 0.4,
+          "min_z": 0.4833,
+          "final_z": 1.0589,
+          "interventions": 50,
+          "oob": false,
+          "pass": true
+        },
+        {
+          "scenario": "Extreme Floor Threshold (z=0.25m)",
+          "start_z": 0.25,
+          "min_z": 0.3333,
+          "final_z": 1.0863,
+          "interventions": 50,
+          "oob": false,
+          "pass": true
+        }
+      ],
+      "upward_climb_tests": [
+        {
+          "scenario": "Nominal Start (z=1.5m)",
+          "start_z": 1.5,
+          "max_z": 2.0049,
+          "final_z": 2.0049,
+          "interventions": 78,
+          "oob": false,
+          "pass": true
+        },
+        {
+          "scenario": "High Altitude Start (z=2.50m)",
+          "start_z": 2.5,
+          "max_z": 2.4167,
+          "final_z": 1.924,
+          "interventions": 50,
+          "oob": false,
+          "pass": true
+        },
+        {
+          "scenario": "Ceiling Proximity Threshold (z=3.10m)",
+          "start_z": 3.1,
+          "max_z": 3.0167,
+          "final_z": 1.889,
+          "interventions": 50,
+          "oob": false,
+          "pass": true
+        },
+        {
+          "scenario": "Extreme Ceiling Threshold (z=3.30m)",
+          "start_z": 3.3,
+          "max_z": 3.2167,
+          "final_z": 2.0033,
+          "interventions": 50,
+          "oob": false,
+          "pass": true
+        }
+      ],
+      "vertical_oscillation_tests": [
+        {
+          "min_z": 1.5186,
+          "max_z": 1.8848,
+          "oob": false,
+          "pass": true
+        }
+      ],
+      "closed_loop_altitude_tests": [
+        {
+          "seed": 101,
+          "mean_z": 1.4982,
+          "min_z": 1.4911,
+          "max_z": 1.5052,
+          "oob": false,
+          "pass": true
+        },
+        {
+          "seed": 202,
+          "mean_z": 1.5004,
+          "min_z": 1.491,
+          "max_z": 1.5281,
+          "oob": false,
+          "pass": true
+        },
+        {
+          "seed": 303,
+          "mean_z": 1.5088,
+          "min_z": 1.4998,
+          "max_z": 1.5198,
+          "oob": false,
+          "pass": true
+        },
+        {
+          "seed": 404,
+          "mean_z": 1.4968,
+          "min_z": 1.4894,
+          "max_z": 1.5063,
+          "oob": false,
+          "pass": true
+        },
+        {
+          "seed": 505,
+          "mean_z": 1.4987,
+          "min_z": 1.4941,
+          "max_z": 1.5042,
+          "oob": false,
+          "pass": true
+        }
+      ],
+      "zero_oob_violations": true,
+      "pass": true
+    },
+    "test_4_memory_and_latency": {
+      "cpu_benchmark": {
+        "passes": 500,
+        "mean_latency_ms": 0.525,
+        "p50_latency_ms": 0.5512,
+        "p95_latency_ms": 0.7775,
+        "p99_latency_ms": 1.0354,
+        "min_latency_ms": 0.3115,
+        "max_latency_ms": 1.0725,
+        "throughput_fps": 1904.7,
+        "rss_delta_mb": 0.0039
+      },
+      "gpu_benchmark": {
+        "device": "NVIDIA GeForce RTX 5060 Laptop GPU",
+        "passes": 500,
+        "mean_latency_ms": 0.4495,
+        "p50_latency_ms": 0.4032,
+        "p95_latency_ms": 0.7013,
+        "p99_latency_ms": 0.8856,
+        "min_latency_ms": 0.3189,
+        "max_latency_ms": 2.339,
+        "throughput_fps": 2224.9,
+        "vram_allocated_start_mb": 39.3887,
+        "vram_allocated_end_mb": 39.3887,
+        "vram_delta_mb": 0.0,
+        "rss_delta_mb": 0.082
+      },
+      "memory_leak_verification": {
+        "batch1_rss_mb": 929.39,
+        "batch2_rss_mb": 929.4,
+        "inter_batch_rss_delta_mb": 0.0156,
+        "inter_batch_pagefile_delta_mb": 0.0,
+        "tracemalloc_delta_mb": 0.0008,
+        "zero_memory_leak": true
+      },
+      "pass": true
+    }
+  },
+  "verdict": "APPROVE",
+  "all_safety_invariants_met": true,
+  "raw_nan_vulnerability": true
+}
